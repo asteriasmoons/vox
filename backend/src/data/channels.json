@@ -1,0 +1,9 @@
+[
+  {
+    "id": "channel_demo",
+    "name": "Demo Channel",
+    "telegramChatId": "@your_channel_username",
+    "description": "Replace this with your Telegram channel username or numeric chat ID.",
+    "isDefault": true
+  }
+]
