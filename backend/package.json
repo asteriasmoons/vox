@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "npm --prefix ../miniapp install && npm --prefix ../miniapp run build && tsc",
+    "build": "tsc",
     "start": "node dist/server.js"
   },
   "dependencies": {
