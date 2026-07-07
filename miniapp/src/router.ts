@@ -31,7 +31,8 @@ export async function render(page: PageName = state.page): Promise<void> {
 
   const root = qs<HTMLDivElement>('#app');
   const pageHtml = getPageHtml(page);
-  root.innerHTML = `<div class="app-shell">${pageHtml}${BottomNav(page)}</div>`;
+  const bottomNavHtml = page === 'editor' ? '' : BottomNav(page);
+  root.innerHTML = `<div class="app-shell">${pageHtml}${bottomNavHtml}</div>`;
 
   bindNavigation();
   await hydratePage(page);

@@ -2,7 +2,6 @@ import type { PageName } from '../router';
 
 const items: Array<{ page: PageName; label: string; icon: string }> = [
   { page: 'dashboard', label: 'Home', icon: '◆' },
-  { page: 'editor', label: 'Editor', icon: '✦' },
   { page: 'channels', label: 'Channels', icon: '◈' },
   { page: 'drafts', label: 'Drafts', icon: '◇' },
   { page: 'settings', label: 'Settings', icon: '⚙' }
