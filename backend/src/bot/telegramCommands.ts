@@ -19,10 +19,10 @@ function formatChatIdResponse(chat: TelegramBot.Chat): string {
   ].join("\n");
 }
 
-export function registerTelegramCommands(): void {
+export async function registerTelegramCommands(): Promise<void> {
   const bot = getTelegramClient();
 
-  bot.setMyCommands([
+  await bot.setMyCommands([
     {
       command: "start",
       description: "Start Vox",
