@@ -34,8 +34,9 @@ export async function render(page: PageName = state.page): Promise<void> {
   const bottomNavHtml = page === 'editor' ? '' : BottomNav(page);
   root.innerHTML = `<div class="app-shell">${pageHtml}${bottomNavHtml}</div>`;
 
-  bindNavigation();
-  await hydratePage(page);
+  // --- SWAP THESE TWO LINES ---
+  await hydratePage(page); // 1. Load the data and update the HTML text first
+  bindNavigation();       // 2. Then find the buttons and attach the click listeners
 }
 
 function getPageHtml(page: PageName): string {
