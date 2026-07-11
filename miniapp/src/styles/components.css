@@ -96,11 +96,11 @@
   color: #f6f684;
 }
 
-/* Add this to the bottom of one of your CSS files to test */
-[data-page], button {
-    cursor: pointer !important;
-    pointer-events: auto !important;
+/* Force all buttons and navigation elements to the absolute front layer */
+[data-page], button, .bottom-nav a {
     position: relative !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
+    pointer-events: auto !important;
 }
+
 
