@@ -2,7 +2,7 @@ import './styles/base.css';
 import './styles/layout.css';
 import './styles/components.css';
 import './styles/editor.css';
-import { render } from './router';
+import { render, type PageName } from './router'; // Imported PageName type
 import { initTelegramMiniApp } from './utils/telegram';
 
 // Initialize the Telegram environment
@@ -17,6 +17,7 @@ document.addEventListener('click', (event) => {
   const page = target.getAttribute('data-page');
 
   if (page) {
-    void render(page);
+    // Cast the raw string to the PageName type expected by render()
+    void render(page as PageName);
   }
 });
