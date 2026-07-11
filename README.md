@@ -91,7 +91,8 @@ Fill in `backend/.env`:
 ```env
 PORT=3000
 TELEGRAM_BOT_TOKEN=your_real_bot_token
-MINIAPP_ORIGIN=http://localhost:5173
+MINIAPP_ORIGIN=https://app.vox.com.im
+PUBLIC_APP_URL=https://api.vox.com.im
 ```
 
 Edit `backend/src/data/channels.json` and replace `@your_channel_username` with your real Telegram channel username or numeric channel ID.
@@ -118,11 +119,13 @@ cd miniapp
 npm install
 ```
 
-Optional local API config:
+The production Mini App is configured with:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=https://api.vox.com.im
 ```
+
+In local development, the Mini App calls same-origin `/api` by default and Vite proxies those requests to the backend on `http://localhost:3000`.
 
 Run the Mini App:
 
@@ -134,6 +137,32 @@ Build the Mini App:
 
 ```bash
 npm run build
+```
+
+## Production deployment
+
+Frontend domain:
+
+```text
+https://app.vox.com.im
+```
+
+Backend domain:
+
+```text
+https://api.vox.com.im
+```
+
+Set these backend production environment variables on the host:
+
+```env
+PORT=3000
+TELEGRAM_BOT_TOKEN=your_real_bot_token
+MINIAPP_ORIGIN=https://app.vox.com.im
+PUBLIC_APP_URL=https://api.vox.com.im
+TELEGRAM_DEFAULT_CHANNEL_ID=@yourchannel
+TELEGRAM_DEFAULT_CHANNEL_NAME=Your Channel Name
+TELEGRAM_DEFAULT_CHANNEL_DESCRIPTION=Main posting channel
 ```
 
 ## Telegram Mini App deployment notes

@@ -1,7 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const dataRoot = path.resolve(process.cwd(), 'src/data');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const dataRoot = path.resolve(__dirname, '../../src/data');
 
 export async function readJsonFile<T>(fileName: string, fallback: T): Promise<T> {
   const filePath = path.join(dataRoot, fileName);

@@ -24,11 +24,6 @@ const state: AppState = {
 export async function render(page: PageName = state.page): Promise<void> {
   state.page = page;
 
-  if (page === 'editor' && state.editor.channels.length === 0) {
-    state.editor.channels = await api.getChannels();
-    state.editor.channelId = state.editor.channelId || state.editor.channels[0]?.id || '';
-  }
-
   const root = qs<HTMLDivElement>('#app');
   const pageHtml = getPageHtml(page);
   const bottomNavHtml = page === 'editor' ? '' : BottomNav(page);
@@ -68,16 +63,28 @@ async function hydratePage(page: PageName): Promise<void> {
 }
 
 async function hydrateDashboard(): Promise<void> {
-  const [drafts, channels, posts] = await Promise.all([api.getDrafts(), api.getChannels(), api.getPosts()]);
-  qs('#draft-count').textContent = String(drafts.length);
-  qs('#channel-count').textContent = String(channels.length);
-  qs('#posted-count').textContent = String(posts.length);
+  try {
+    const [drafts, channels, posts] = await Promise.all([api.getDrafts(), api.getChannels(), api.getPosts()]);
+    qs('#draft-count').textContent = String(drafts.length);
+    qs('#channel-count').textContent = String(channels.length);
+    qs('#posted-count').textContent = String(posts.length);
+  } catch (error) {
+    console.warn(error);
+    qs('#draft-count').textContent = '!';
+    qs('#channel-count').textContent = '!';
+    qs('#posted-count').textContent = '!';
+  }
 }
 
 async function hydrateChannels(): Promise<void> {
-  const channels = await api.getChannels();
   const list = qs('#channels-list');
-  list.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels yet.</p>';
+  try {
+    const channels = await api.getChannels();
+    list.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels yet.</p>';
+  } catch (error) {
+    console.warn(error);
+    list.innerHTML = '<p class="muted">Channels could not be loaded right now.</p>';
+  }
 }
 
 function channelCard(channel: Channel): string {
@@ -85,9 +92,14 @@ function channelCard(channel: Channel): string {
 }
 
 async function hydrateDrafts(): Promise<void> {
-  const drafts = await api.getDrafts();
   const list = qs('#drafts-list');
-  list.innerHTML = drafts.map(draftCard).join('') || '<p class="muted">No saved drafts yet.</p>';
+  try {
+    const drafts = await api.getDrafts();
+    list.innerHTML = drafts.map(draftCard).join('') || '<p class="muted">No saved drafts yet.</p>';
+  } catch (error) {
+    console.warn(error);
+    list.innerHTML = '<p class="muted">Drafts could not be loaded right now.</p>';
+  }
 }
 
 function draftCard(draft: Draft): string {
@@ -117,18 +129,51 @@ function bindEditor(): void {
   });
 
   bindButtonBuilder();
+  void hydrateEditorChannels(channelSelect);
 
   qs<HTMLButtonElement>('#save-draft').addEventListener('click', async () => {
     syncEditorFields(titleInput, channelSelect, textarea);
-    await api.saveDraft(createPayload('draft'));
-    alert('Draft saved.');
+    try {
+      await api.saveDraft(createPayload('draft'));
+      alert('Draft saved.');
+    } catch (error) {
+      console.warn(error);
+      alert('Draft could not be saved right now.');
+    }
   });
 
   qs<HTMLButtonElement>('#publish-now').addEventListener('click', async () => {
     syncEditorFields(titleInput, channelSelect, textarea);
-    await api.publishPost(createPayload('posted'));
-    alert('Published to Telegram.');
+    try {
+      await api.publishPost(createPayload('posted'));
+      alert('Published to Telegram.');
+    } catch (error) {
+      console.warn(error);
+      alert('Post could not be published right now.');
+    }
   });
+}
+
+async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<void> {
+  try {
+    if (state.editor.channels.length === 0) {
+      state.editor.channels = await api.getChannels();
+    }
+
+    state.editor.channelId = state.editor.channelId || state.editor.channels[0]?.id || '';
+    channelSelect.disabled = false;
+    channelSelect.innerHTML = [
+      '<option value="">Choose a channel</option>',
+      ...state.editor.channels.map(
+        (channel) => `<option value="${channel.id}" ${channel.id === state.editor.channelId ? 'selected' : ''}>${channel.name}</option>`
+      )
+    ].join('');
+    channelSelect.value = state.editor.channelId;
+  } catch (error) {
+    console.warn(error);
+    channelSelect.disabled = true;
+    channelSelect.innerHTML = '<option value="">Channels unavailable</option>';
+  }
 }
 
 function syncEditorFields(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement): void {
