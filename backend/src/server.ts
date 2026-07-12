@@ -16,8 +16,8 @@ async function initializeTelegram(): Promise<void> {
 }
 
 function bootstrap(): void {
-  app.listen(env.port, () => {
-    console.log(`Vox backend running on http://localhost:${env.port}`);
+  app.listen(env.port, '0.0.0.0', () => {
+    console.log(`Vox backend running on 0.0.0.0:${env.port}`);
 
     initializeTelegram().catch((error) => {
       console.error('Failed to initialize Telegram integration:', error);
