@@ -9,10 +9,10 @@ async function initializeTelegram(): Promise<void> {
   await registerTelegramCommands();
 
   const bot = getTelegramClient();
+  const webhookUrl = `${requirePublicAppUrl()}/api/telegram/webhook`;
 
-  await bot.setWebHook(
-    `${requirePublicAppUrl()}/api/telegram/webhook`
-  );
+  await bot.setWebHook(webhookUrl);
+  console.log(`Telegram webhook registered at ${webhookUrl}`);
 }
 
 function bootstrap(): void {
