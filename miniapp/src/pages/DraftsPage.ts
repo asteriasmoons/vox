@@ -4,8 +4,8 @@ import { Draft, Channel } from '../types/post';
 
 export function draftCard(draft: Draft, channels: Channel[]): string {
   const channel = channels.find(c => c.id === draft.channelId);
-  const channelName = channel ? channel.name : 'Unknown';
-  const starClass = draft.isFavorite ? 'star-btn filled' : 'star-btn';
+  const channelName = channel ? channel.name : 'No channel';
+  const starClass = draft.isFavorite ? 'star-btn active' : 'star-btn';
   const tags = (draft.tags || [])
     .map(t => `<span class="tag-pill">${t}</span>`)
     .join('');
@@ -20,16 +20,22 @@ export function draftCard(draft: Draft, channels: Channel[]): string {
   else if (diffHr > 0) relative = `${diffHr}h ago`;
   else if (diffMin > 0) relative = `${diffMin}m ago`;
 
+  const preview = draft.text.length > 60 ? draft.text.slice(0, 60) + '...' : draft.text;
+
   return `
-    <div class="draft-card list-card" data-draft-id="${draft.id}">
+    <div class="draft-card" data-draft-id="${draft.id}">
       <input type="checkbox" class="draft-checkbox" />
       <button class="${starClass}" data-favorite-draft="${draft.id}">&#9733;</button>
-      <div class="list-card-body">
+      <div class="draft-body">
         <strong>${draft.title}</strong>
-        <span class="muted">${channelName}</span>
-        <div class="tag-row">${tags}</div>
-        <time class="muted">${relative}</time>
-        <span class="status-badge status-${draft.status}">${draft.status}</span>
+        <p class="draft-preview">${preview}</p>
+        <div class="draft-meta">
+          <span>${channelName}</span>
+          <span>·</span>
+          <time>${relative}</time>
+          <span class="status-badge status-${draft.status}">${draft.status}</span>
+        </div>
+        ${tags ? `<div class="tag-row">${tags}</div>` : ''}
       </div>
     </div>
   `;
@@ -40,26 +46,25 @@ export function DraftsPage(): string {
     ${Header('Drafts', 'Saved announcements waiting for their moment.')}
     <main class="page-stack">
       ${GlassCard(`
-        <div class="toolbar-row">
-          <input type="text" id="draft-search" class="input" placeholder="Search drafts..." />
-          <select id="draft-sort" class="input">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="title-az">Title A-Z</option>
-            <option value="title-za">Title Z-A</option>
-          </select>
-        </div>
-        <div class="filter-tabs">
+        <input type="text" id="draft-search" class="input" placeholder="Search drafts..." />
+        <div class="filter-tabs" style="margin-top:10px;">
           <button class="filter-tab active" data-filter="all">All</button>
           <button class="filter-tab" data-filter="favorites">Favorites</button>
           <button class="filter-tab" data-filter="archived">Archived</button>
           <button class="filter-tab" data-filter="trashed">Trashed</button>
         </div>
+        <div class="filter-tabs" style="margin-top:8px;">
+          <button class="filter-tab active" data-sort="newest">Newest</button>
+          <button class="filter-tab" data-sort="oldest">Oldest</button>
+          <button class="filter-tab" data-sort="title-az">A → Z</button>
+          <button class="filter-tab" data-sort="title-za">Z → A</button>
+        </div>
       `)}
       <div class="bulk-bar hidden" id="bulk-bar">
+        <span id="bulk-count">0 selected</span>
         <button class="small-action" data-bulk="archive">Archive</button>
         <button class="small-action" data-bulk="favorite">Favorite</button>
-        <button class="small-action" data-bulk="delete">Delete</button>
+        <button class="small-action danger" data-bulk="delete">Delete</button>
       </div>
       ${GlassCard(`<div id="drafts-list" class="list-stack"><p class="muted">Loading drafts...</p></div>`)}
     </main>

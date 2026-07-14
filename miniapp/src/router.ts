@@ -2,7 +2,7 @@ import { BottomNav } from './components/BottomNav';
 import { DashboardPage } from './pages/DashboardPage';
 import { ChannelsPage, channelCard } from './pages/ChannelsPage';
 import { DraftsPage, draftCard } from './pages/DraftsPage';
-import { CalendarPage, renderMonthGrid } from './pages/CalendarPage';
+import { CalendarPage, renderMonthGrid, renderWeekGrid, renderDayView, renderAgendaView } from './pages/CalendarPage';
 import { AnalyticsPage, renderBarChart, renderHeatmap } from './pages/AnalyticsPage';
 import { TemplatesPage, templateCard } from './pages/TemplatesPage';
 import { initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
@@ -20,6 +20,7 @@ interface AppState {
   page: PageName;
   editor: EditorState;
   calendarDate: Date;
+  calendarView: string;
   draftFilter: string;
   draftSort: string;
   templateCategory: string;
@@ -29,6 +30,7 @@ const state: AppState = {
   page: 'dashboard',
   editor: { ...initialEditorState },
   calendarDate: new Date(),
+  calendarView: 'month',
   draftFilter: 'all',
   draftSort: 'newest',
   templateCategory: 'all'
@@ -62,7 +64,7 @@ function getPageHtml(page: PageName): string {
     channels: ChannelsPage(),
     drafts: DraftsPage(),
     settings: SettingsPage(),
-    calendar: CalendarPage(state.calendarDate),
+    calendar: CalendarPage(state.calendarDate, state.calendarView),
     analytics: AnalyticsPage(),
     templates: TemplatesPage(),
     more: ''
@@ -144,50 +146,55 @@ async function hydrateChannels(): Promise<void> {
   }
 
   const searchInput = qs<HTMLInputElement>('#channel-search');
-  const sortSelect = qs<HTMLSelectElement>('#channel-sort');
-  const addBtn = qs<HTMLButtonElement>('#add-channel-btn');
-  const addForm = document.getElementById('add-channel-form');
-  const saveBtn = document.getElementById('save-channel-btn');
-  const cancelBtn = document.getElementById('cancel-channel-btn');
+  const refreshBtn = document.getElementById('refresh-channels-btn');
+  const discoverInput = qs<HTMLInputElement>('#discover-input');
+  const discoverBtn = document.getElementById('discover-btn');
+  const discoverStatus = document.getElementById('discover-status');
 
   searchInput.addEventListener('input', () => {
-    const filtered = filterChannels(allChannels, searchInput.value, sortSelect.value);
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = query
+      ? allChannels.filter(c => c.name.toLowerCase().includes(query) || (c.username ?? '').toLowerCase().includes(query))
+      : allChannels;
     renderChannelList(filtered, list);
     bindChannelActions(list, allChannels);
   });
 
-  sortSelect.addEventListener('change', () => {
-    const filtered = filterChannels(allChannels, searchInput.value, sortSelect.value);
-    renderChannelList(filtered, list);
-    bindChannelActions(list, allChannels);
-  });
-
-  if (addBtn && addForm) {
-    addBtn.addEventListener('click', () => addForm.classList.toggle('hidden'));
-  }
-
-  if (cancelBtn && addForm) {
-    cancelBtn.addEventListener('click', () => addForm.classList.add('hidden'));
-  }
-
-  if (saveBtn) {
-    saveBtn.addEventListener('click', async () => {
-      const name = qs<HTMLInputElement>('#new-channel-name').value.trim();
-      const telegramChatId = qs<HTMLInputElement>('#new-channel-chat-id').value.trim();
-      const username = qs<HTMLInputElement>('#new-channel-username').value.trim();
-      const description = qs<HTMLTextAreaElement>('#new-channel-description').value.trim();
-
-      if (!name || !telegramChatId) {
-        alert('Name and Telegram Chat ID are required.');
-        return;
-      }
-
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.textContent = 'Refreshing...';
       try {
-        await api.saveChannel({ name, telegramChatId, username: username || undefined, description: description || undefined });
+        await api.refreshChannels();
         void render('channels');
       } catch (error) {
         console.warn(error);
-        alert('Could not save channel.');
+        refreshBtn.textContent = 'Refresh';
+      }
+    });
+  }
+
+  if (discoverBtn && discoverInput) {
+    discoverBtn.addEventListener('click', async () => {
+      const identifier = discoverInput.value.trim();
+      if (!identifier) return;
+
+      discoverBtn.textContent = 'Looking up...';
+      if (discoverStatus) discoverStatus.textContent = '';
+
+      try {
+        const channel = await api.discoverChannel(identifier);
+        if (discoverStatus) {
+          discoverStatus.style.color = '#10b981';
+          discoverStatus.textContent = `Added "${channel.name}" successfully.`;
+        }
+        discoverInput.value = '';
+        void render('channels');
+      } catch (error) {
+        if (discoverStatus) {
+          discoverStatus.style.color = '#f87171';
+          discoverStatus.textContent = error instanceof Error ? error.message : 'Channel not found.';
+        }
+        discoverBtn.textContent = 'Add';
       }
     });
   }
@@ -195,27 +202,8 @@ async function hydrateChannels(): Promise<void> {
   bindChannelActions(list, allChannels);
 }
 
-function filterChannels(channels: Channel[], search: string, sort: string): Channel[] {
-  let filtered = channels;
-  const query = search.toLowerCase().trim();
-  if (query) {
-    filtered = filtered.filter(
-      (c) => c.name.toLowerCase().includes(query) || (c.username ?? '').toLowerCase().includes(query)
-    );
-  }
-
-  const sorted = [...filtered];
-  switch (sort) {
-    case 'name-az': sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
-    case 'name-za': sorted.sort((a, b) => b.name.localeCompare(a.name)); break;
-    case 'newest': sorted.sort((a, b) => (b.connectedAt ?? '').localeCompare(a.connectedAt ?? '')); break;
-    case 'oldest': sorted.sort((a, b) => (a.connectedAt ?? '').localeCompare(b.connectedAt ?? '')); break;
-  }
-  return sorted;
-}
-
 function renderChannelList(channels: Channel[], container: Element): void {
-  container.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels yet.</p>';
+  container.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels connected. Add one below.</p>';
 }
 
 function bindChannelActions(container: Element, allChannels: Channel[]): void {
@@ -238,7 +226,6 @@ function bindChannelActions(container: Element, allChannels: Channel[]): void {
         void render('channels');
       } catch (error) {
         console.warn(error);
-        alert('Could not remove channel.');
       }
     });
 
@@ -248,19 +235,7 @@ function bindChannelActions(container: Element, allChannels: Channel[]): void {
         void render('channels');
       } catch (error) {
         console.warn(error);
-        alert('Could not set default channel.');
       }
-    });
-
-    card.querySelector('[data-channel-action="edit"]')?.addEventListener('click', () => {
-      const channel = allChannels.find((c) => c.id === channelId);
-      if (!channel) return;
-      const addForm = document.getElementById('add-channel-form');
-      if (addForm) addForm.classList.remove('hidden');
-      qs<HTMLInputElement>('#new-channel-name').value = channel.name;
-      qs<HTMLInputElement>('#new-channel-chat-id').value = channel.telegramChatId;
-      qs<HTMLInputElement>('#new-channel-username').value = channel.username ?? '';
-      qs<HTMLTextAreaElement>('#new-channel-description').value = channel.description ?? '';
     });
   });
 }
@@ -282,30 +257,31 @@ async function hydrateDrafts(): Promise<void> {
   }
 
   const searchInput = qs<HTMLInputElement>('#draft-search');
-  const sortSelect = qs<HTMLSelectElement>('#draft-sort');
   const bulkBar = document.getElementById('bulk-bar');
 
-  searchInput.addEventListener('input', () => {
-    const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
+  const refilter = () => {
+    const filtered = filterDrafts(allDrafts, searchInput.value, state.draftSort, state.draftFilter);
     renderDraftList(filtered, allChannels, list);
     bindDraftActions(list, allDrafts, allChannels, bulkBar);
-  });
+  };
 
-  sortSelect.addEventListener('change', () => {
-    state.draftSort = sortSelect.value;
-    const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
-    renderDraftList(filtered, allChannels, list);
-    bindDraftActions(list, allDrafts, allChannels, bulkBar);
-  });
+  searchInput.addEventListener('input', refilter);
 
   document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((tab) => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('[data-filter]').forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
       state.draftFilter = tab.dataset.filter!;
-      const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
-      renderDraftList(filtered, allChannels, list);
-      bindDraftActions(list, allDrafts, allChannels, bulkBar);
+      refilter();
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('[data-sort]').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.draftSort = tab.dataset.sort!;
+      refilter();
     });
   });
 
@@ -395,7 +371,15 @@ function getCheckedDraftIds(): string[] {
 
 // ─── Calendar Hydration ────────────────────────────────────────────────────────
 
+interface CalEvent {
+  date: string;
+  title: string;
+  status: 'draft' | 'scheduled' | 'posted';
+}
+
 async function hydrateCalendar(): Promise<void> {
+  let allEvents: CalEvent[] = [];
+
   try {
     const [drafts, scheduled, posts] = await Promise.all([
       api.getDrafts(),
@@ -403,54 +387,63 @@ async function hydrateCalendar(): Promise<void> {
       api.getPosts()
     ]);
 
-    const allEvents = [
-      ...drafts.map((d) => ({ date: d.updatedAt, status: 'draft' as const })),
-      ...scheduled.map((s) => ({ date: s.schedule?.publishAt ?? s.createdAt, status: 'scheduled' as const })),
-      ...posts.map((p) => ({ date: p.createdAt, status: 'posted' as const }))
+    allEvents = [
+      ...drafts.map((d) => ({ date: d.updatedAt, title: d.title, status: 'draft' as const })),
+      ...scheduled.map((s) => ({ date: s.schedule?.publishAt ?? s.createdAt, title: s.title, status: 'scheduled' as const })),
+      ...posts.map((p) => ({ date: p.createdAt, title: p.title, status: 'posted' as const }))
     ];
 
     placeCalendarEvents(allEvents);
+
+    // For agenda view, populate the list
+    if (state.calendarView === 'agenda') {
+      populateAgenda(allEvents);
+    }
   } catch (error) {
     console.warn(error);
   }
 
+  // Prev/next navigation
   const prevBtn = document.getElementById('cal-prev');
   const nextBtn = document.getElementById('cal-next');
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() - 1, 1);
+      if (state.calendarView === 'month') {
+        state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() - 1, 1);
+      } else if (state.calendarView === 'week') {
+        state.calendarDate = new Date(state.calendarDate.getTime() - 7 * 86400000);
+      } else {
+        state.calendarDate = new Date(state.calendarDate.getTime() - 86400000);
+      }
       void render('calendar');
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() + 1, 1);
+      if (state.calendarView === 'month') {
+        state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() + 1, 1);
+      } else if (state.calendarView === 'week') {
+        state.calendarDate = new Date(state.calendarDate.getTime() + 7 * 86400000);
+      } else {
+        state.calendarDate = new Date(state.calendarDate.getTime() + 86400000);
+      }
       void render('calendar');
     });
   }
 
+  // View tabs
   document.querySelectorAll<HTMLButtonElement>('[data-calendar-view]').forEach((tab) => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('[data-calendar-view]').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      const view = tab.dataset.calendarView;
-      if (view !== 'month') {
-        const grid = document.getElementById('calendar-grid');
-        if (grid) grid.innerHTML = '<p class="muted">Coming soon.</p>';
-      } else {
-        const year = state.calendarDate.getFullYear();
-        const month = state.calendarDate.getMonth();
-        const grid = document.getElementById('calendar-grid');
-        if (grid) grid.innerHTML = renderMonthGrid(year, month);
-        void hydrateCalendar();
-      }
+      const view = tab.dataset.calendarView!;
+      state.calendarView = view;
+      void render('calendar');
     });
   });
 }
 
-function placeCalendarEvents(events: Array<{ date: string; status: 'draft' | 'scheduled' | 'posted' }>): void {
+function placeCalendarEvents(events: CalEvent[]): void {
   const colors: Record<string, string> = {
     draft: 'rgba(247,237,255,0.32)',
     scheduled: '#00dbff',
@@ -458,14 +451,78 @@ function placeCalendarEvents(events: Array<{ date: string; status: 'draft' | 'sc
   };
   for (const event of events) {
     const dateStr = event.date.slice(0, 10);
-    const cell = document.querySelector<HTMLElement>(`[data-events-date="${dateStr}"]`);
-    if (cell) {
+    // Month/week views: place dots
+    document.querySelectorAll<HTMLElement>(`[data-events-date="${dateStr}"]`).forEach(cell => {
+      if (cell.dataset.hour != null) return; // skip day-view hour slots
       const dot = document.createElement('span');
       dot.className = 'cal-event-dot';
       dot.style.background = colors[event.status] || '#fff';
+      dot.title = event.title;
       cell.appendChild(dot);
+    });
+
+    // Day view: place event cards in hour slots
+    const eventDate = new Date(event.date);
+    const hour = eventDate.getHours();
+    const hourSlot = document.querySelector<HTMLElement>(`[data-events-date="${dateStr}"][data-hour="${hour}"]`);
+    if (hourSlot) {
+      const card = document.createElement('div');
+      card.className = `day-event event-${event.status}`;
+      card.textContent = event.title;
+      hourSlot.appendChild(card);
     }
   }
+}
+
+function populateAgenda(events: CalEvent[]): void {
+  const container = document.getElementById('agenda-list');
+  if (!container) return;
+
+  // Sort by date ascending, filter to today and future
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const upcoming = events
+    .filter(e => e.date.slice(0, 10) >= todayStr)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (upcoming.length === 0) {
+    container.innerHTML = '<p class="muted">No upcoming events.</p>';
+    return;
+  }
+
+  const colors: Record<string, string> = {
+    draft: 'rgba(247,237,255,0.32)',
+    scheduled: '#00dbff',
+    posted: '#10b981'
+  };
+
+  // Group by date
+  const grouped = new Map<string, CalEvent[]>();
+  for (const e of upcoming) {
+    const key = e.date.slice(0, 10);
+    if (!grouped.has(key)) grouped.set(key, []);
+    grouped.get(key)!.push(e);
+  }
+
+  let html = '';
+  for (const [dateKey, items] of grouped) {
+    const d = new Date(dateKey + 'T12:00:00');
+    const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    html += `<div class="agenda-date-header">${label}</div>`;
+    for (const item of items) {
+      const time = new Date(item.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      html += `
+        <div class="agenda-item">
+          <span class="cal-dot" style="background:${colors[item.status]}"></span>
+          <div class="agenda-item-body">
+            <strong>${item.title}</strong>
+            <span class="muted">${time} · ${item.status}</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  container.innerHTML = html;
 }
 
 // ─── Analytics Hydration ───────────────────────────────────────────────────────
@@ -553,6 +610,48 @@ async function hydrateTemplates(): Promise<void> {
   });
 
   bindTemplateActions(list, allTemplates);
+
+  // Modal close handlers
+  const modal = document.getElementById('template-preview-modal');
+  const modalCloseBackdrop = document.getElementById('tpl-modal-close');
+  const modalCloseBtn = document.getElementById('tpl-modal-close-btn');
+  const modalUseBtn = document.getElementById('tpl-modal-use');
+
+  const closeModal = () => { if (modal) modal.style.display = 'none'; };
+
+  modalCloseBackdrop?.addEventListener('click', closeModal);
+  modalCloseBtn?.addEventListener('click', closeModal);
+
+  if (modalUseBtn) {
+    modalUseBtn.addEventListener('click', () => {
+      const templateId = modalUseBtn.dataset.templateId;
+      if (!templateId) return;
+      const template = allTemplates.find(t => t.id === templateId);
+      if (!template) return;
+      closeModal();
+      state.editor.title = template.name;
+      state.editor.text = template.text;
+      state.editor.buttons = template.buttons.length > 0
+        ? template.buttons.map((row) => row.map((b) => ({ ...b })))
+        : [[{ text: '', url: '' }]];
+      void render('editor');
+    });
+  }
+}
+
+function openTemplatePreview(template: Template): void {
+  const modal = document.getElementById('template-preview-modal');
+  const title = document.getElementById('tpl-modal-title');
+  const body = document.getElementById('tpl-modal-body');
+  const useBtn = document.getElementById('tpl-modal-use');
+
+  if (!modal || !title || !body) return;
+
+  title.textContent = template.name;
+  body.textContent = template.text;
+  if (useBtn) useBtn.dataset.templateId = template.id;
+
+  modal.style.display = 'flex';
 }
 
 function filterTemplates(templates: Template[], search: string, category: string): Template[] {
@@ -576,6 +675,10 @@ function bindTemplateActions(container: Element, allTemplates: Template[]): void
     const templateId = card.dataset.templateId!;
     const template = allTemplates.find((t) => t.id === templateId);
     if (!template) return;
+
+    card.querySelector('[data-template-action="preview"]')?.addEventListener('click', () => {
+      openTemplatePreview(template);
+    });
 
     card.querySelector('[data-template-action="use"]')?.addEventListener('click', () => {
       state.editor.title = template.name;

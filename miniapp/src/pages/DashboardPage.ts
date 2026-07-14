@@ -15,14 +15,14 @@ export function DashboardPage(): string {
       `)}
       ${GlassCard(`
         <h2>Post Studio</h2>
-        <p class="muted">Jump into the visual editor to compose a polished update with formatting, preview, and inline buttons.</p>
+        <p style="margin:6px 0 14px;color:rgba(247,237,255,0.66);">Jump into the visual editor to compose a polished update with formatting, preview, and inline buttons.</p>
         <button class="primary-action" data-page="editor">Create Announcement</button>
       `)}
       ${GlassCard(`
         <h2>Quick Links</h2>
-        <div class="quick-links">
-          <button class="primary-action" data-page="calendar">View Calendar</button>
-          <button class="primary-action" data-page="templates">Browse Templates</button>
+        <div style="display:grid;gap:10px;margin-top:12px;">
+          <button class="secondary-action" data-page="calendar">View Calendar</button>
+          <button class="secondary-action" data-page="templates">Browse Templates</button>
         </div>
       `)}
     </main>

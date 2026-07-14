@@ -29,11 +29,14 @@ export function templateCard(template: Template): string {
       </div>
       <strong class="tpl-name">${template.name}</strong>
       <p class="tpl-preview">${preview}</p>
-      <button class="${starClass}" data-favorite-template="${template.id}">&#9733;</button>
-      <div class="tpl-actions">
-        <button class="small-action" data-template-action="use">Use</button>
-        <button class="small-action" data-template-action="duplicate">Duplicate</button>
-        ${deleteBtn}
+      <div class="tpl-footer">
+        <button class="${starClass}" data-favorite-template="${template.id}">&#9733;</button>
+        <div class="tpl-actions">
+          <button class="small-action" data-template-action="preview">View</button>
+          <button class="small-action" data-template-action="use">Use</button>
+          <button class="small-action" data-template-action="duplicate">Duplicate</button>
+          ${deleteBtn}
+        </div>
       </div>
     </div>
   `;
@@ -56,5 +59,18 @@ export function TemplatesPage(): string {
       `)}
       ${GlassCard(`<div id="templates-list" class="tpl-grid"><p class="muted">Loading templates...</p></div>`)}
     </main>
+    <div id="template-preview-modal" class="tpl-modal" style="display:none;">
+      <div class="tpl-modal-backdrop" id="tpl-modal-close"></div>
+      <div class="tpl-modal-panel">
+        <div class="tpl-modal-header">
+          <strong id="tpl-modal-title"></strong>
+          <button class="small-action" id="tpl-modal-close-btn">Close</button>
+        </div>
+        <div id="tpl-modal-body" class="tpl-modal-body"></div>
+        <div class="tpl-modal-actions">
+          <button class="primary-action" id="tpl-modal-use">Use Template</button>
+        </div>
+      </div>
+    </div>
   `;
 }

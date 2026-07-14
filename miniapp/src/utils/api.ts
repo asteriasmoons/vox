@@ -32,6 +32,10 @@ export const api = {
     request<Channel>(`/api/channels/${id}/default`, { method: 'PUT' }),
   toggleChannelFavorite: (id: string) =>
     request<Channel>(`/api/channels/${id}/favorite`, { method: 'PUT' }),
+  discoverChannel: (identifier: string) =>
+    request<Channel>('/api/channels/discover', { method: 'POST', body: JSON.stringify({ identifier }) }),
+  refreshChannels: () =>
+    request<Channel[]>('/api/channels/refresh', { method: 'POST' }),
 
   // ── Drafts ──
   getDrafts: (params?: { search?: string; sort?: string; filter?: string }) => {
