@@ -3,8 +3,8 @@
   margin: 0 auto;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: max(14px, env(safe-area-inset-top)) clamp(14px, 4vw, 28px)
-    calc(104px + env(safe-area-inset-bottom));
+  padding: var(--vox-shell-top-offset) max(clamp(14px, 4vw, 28px), calc(var(--vox-safe-right) + 14px))
+    calc(104px + var(--vox-safe-bottom)) max(clamp(14px, 4vw, 28px), calc(var(--vox-safe-left) + 14px));
 }
 
 .app-header {
@@ -62,7 +62,7 @@
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: calc(12px + env(safe-area-inset-bottom));
+  bottom: calc(12px + var(--vox-safe-bottom));
   transform: translateX(-50%);
   z-index: 20;
   width: min(calc(100% - 24px), 680px);
@@ -113,7 +113,7 @@
 
 .back-button {
   position: sticky;
-  top: max(10px, env(safe-area-inset-top));
+  top: max(10px, var(--vox-safe-top));
   z-index: 30;
   display: inline-flex;
   align-items: center;
@@ -139,7 +139,7 @@
 
 @media (min-width: 760px) {
   .app-shell {
-    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+    padding-bottom: calc(112px + var(--vox-safe-bottom));
   }
 
   .app-header {

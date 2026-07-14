@@ -4,6 +4,14 @@ declare global {
       WebApp?: {
         ready: () => void;
         expand: () => void;
+        isFullscreen?: boolean;
+        platform?: string;
+        safeAreaInset?: TelegramSafeAreaInset;
+        contentSafeAreaInset?: TelegramSafeAreaInset;
+        viewportHeight?: number;
+        viewportStableHeight?: number;
+        onEvent?: (eventType: string, eventHandler: () => void) => void;
+        offEvent?: (eventType: string, eventHandler: () => void) => void;
         MainButton: {
           text: string;
           show: () => void;
@@ -14,6 +22,13 @@ declare global {
       };
     };
   }
+}
+
+interface TelegramSafeAreaInset {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
 }
 
 export {};
