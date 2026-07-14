@@ -1,0 +1,1514 @@
+{
+  "renamedAt": "2026-07-14T17:28:31.593Z",
+  "count": 377,
+  "renames": [
+    {
+      "from": "akar-icons-arrow-repeat.svg",
+      "to": "arrow-repeat.svg"
+    },
+    {
+      "from": "bi-balloon-fill.svg",
+      "to": "balloon-fill.svg"
+    },
+    {
+      "from": "bi-balloon-heart-fill.svg",
+      "to": "balloon-heart-fill.svg"
+    },
+    {
+      "from": "bi-box2-heart-fill.svg",
+      "to": "box2-heart-fill.svg"
+    },
+    {
+      "from": "bi-cake2-fill.svg",
+      "to": "cake2-fill.svg"
+    },
+    {
+      "from": "bi-envelope-paper-heart-fill.svg",
+      "to": "envelope-paper-heart-fill.svg"
+    },
+    {
+      "from": "bi-list-stars.svg",
+      "to": "list-stars.svg"
+    },
+    {
+      "from": "bi-mailbox2.svg",
+      "to": "mailbox2.svg"
+    },
+    {
+      "from": "bi-patch-exclamation-fill.svg",
+      "to": "patch-exclamation-fill.svg"
+    },
+    {
+      "from": "bi-patch-minus-fill.svg",
+      "to": "patch-minus-fill.svg"
+    },
+    {
+      "from": "bi-patch-plus-fill.svg",
+      "to": "patch-plus-fill.svg"
+    },
+    {
+      "from": "bi-sign-stop-fill.svg",
+      "to": "sign-stop-fill.svg"
+    },
+    {
+      "from": "bi-sign-stop-lights-fill.svg",
+      "to": "sign-stop-lights-fill.svg"
+    },
+    {
+      "from": "bi-signpost-2-fill.svg",
+      "to": "signpost-2-fill.svg"
+    },
+    {
+      "from": "bi-stars.svg",
+      "to": "stars.svg"
+    },
+    {
+      "from": "bi-stoplights-fill.svg",
+      "to": "stoplights-fill.svg"
+    },
+    {
+      "from": "bi-terminal-fill.svg",
+      "to": "terminal-fill.svg"
+    },
+    {
+      "from": "bi-toggles.svg",
+      "to": "toggles.svg"
+    },
+    {
+      "from": "bi-toggles2.svg",
+      "to": "toggles2.svg"
+    },
+    {
+      "from": "bi-valentine2.svg",
+      "to": "valentine2.svg"
+    },
+    {
+      "from": "boxicons-bear-filled.svg",
+      "to": "bear-filled.svg"
+    },
+    {
+      "from": "boxicons-dashboard-filled.svg",
+      "to": "dashboard-filled.svg"
+    },
+    {
+      "from": "boxicons-grid-row-top-filled.svg",
+      "to": "grid-row-top-filled.svg"
+    },
+    {
+      "from": "boxicons-lotion-filled.svg",
+      "to": "lotion-filled.svg"
+    },
+    {
+      "from": "boxicons-microphone-big-filled.svg",
+      "to": "microphone-big-filled.svg"
+    },
+    {
+      "from": "boxicons-pencil-edit-circle-filled.svg",
+      "to": "pencil-edit-circle-filled.svg"
+    },
+    {
+      "from": "boxicons-pin-filled.svg",
+      "to": "pin-filled.svg"
+    },
+    {
+      "from": "boxicons-planet-filled.svg",
+      "to": "planet-filled.svg"
+    },
+    {
+      "from": "boxicons-water-drop-alt-filled.svg",
+      "to": "water-drop-alt-filled.svg"
+    },
+    {
+      "from": "boxicons-yin-yang-filled.svg",
+      "to": "yin-yang-filled.svg"
+    },
+    {
+      "from": "carbon-chart-bubble-packed.svg",
+      "to": "chart-bubble-packed.svg"
+    },
+    {
+      "from": "cuida-pin-fill.svg",
+      "to": "pin-fill.svg"
+    },
+    {
+      "from": "emojione-monotone-alarm-clock.svg",
+      "to": "alarm-clock.svg"
+    },
+    {
+      "from": "emojione-monotone-aquarius.svg",
+      "to": "aquarius.svg"
+    },
+    {
+      "from": "emojione-monotone-aries.svg",
+      "to": "aries.svg"
+    },
+    {
+      "from": "emojione-monotone-books.svg",
+      "to": "books.svg"
+    },
+    {
+      "from": "emojione-monotone-cancer.svg",
+      "to": "cancer.svg"
+    },
+    {
+      "from": "emojione-monotone-capricorn.svg",
+      "to": "capricorn.svg"
+    },
+    {
+      "from": "emojione-monotone-gemini.svg",
+      "to": "gemini.svg"
+    },
+    {
+      "from": "emojione-monotone-leo.svg",
+      "to": "leo.svg"
+    },
+    {
+      "from": "emojione-monotone-libra.svg",
+      "to": "libra.svg"
+    },
+    {
+      "from": "emojione-monotone-pisces.svg",
+      "to": "pisces.svg"
+    },
+    {
+      "from": "emojione-monotone-sagittarius.svg",
+      "to": "sagittarius.svg"
+    },
+    {
+      "from": "emojione-monotone-scorpio.svg",
+      "to": "scorpio.svg"
+    },
+    {
+      "from": "emojione-monotone-taurus.svg",
+      "to": "taurus.svg"
+    },
+    {
+      "from": "emojione-monotone-virgo.svg",
+      "to": "virgo.svg"
+    },
+    {
+      "from": "f7-link-circle-fill.svg",
+      "to": "link-circle-fill.svg"
+    },
+    {
+      "from": "f7-logo-instagram.svg",
+      "to": "logo-instagram.svg"
+    },
+    {
+      "from": "f7-paintbrush-fill.svg",
+      "to": "paintbrush-fill.svg"
+    },
+    {
+      "from": "f7-pencil-circle-fill.svg",
+      "to": "pencil-circle-fill.svg"
+    },
+    {
+      "from": "f7-xmark-seal-fill.svg",
+      "to": "xmark-seal-fill.svg"
+    },
+    {
+      "from": "fa-brands-facebook-messenger.svg",
+      "to": "facebook-messenger.svg"
+    },
+    {
+      "from": "fa6-solid-couch.svg",
+      "to": "couch.svg"
+    },
+    {
+      "from": "fa6-solid-gavel.svg",
+      "to": "gavel.svg"
+    },
+    {
+      "from": "fa6-solid-house-user.svg",
+      "to": "house-user.svg"
+    },
+    {
+      "from": "fa6-solid-icons.svg",
+      "to": "icons.svg"
+    },
+    {
+      "from": "fa6-solid-shapes.svg",
+      "to": "shapes.svg"
+    },
+    {
+      "from": "fa6-solid-signs-post.svg",
+      "to": "signs-post.svg"
+    },
+    {
+      "from": "fa6-solid-toilet.svg",
+      "to": "toilet-renamed.svg"
+    },
+    {
+      "from": "fa6-solid-user-astronaut.svg",
+      "to": "user-astronaut.svg"
+    },
+    {
+      "from": "fa6-solid-wand-sparkles.svg",
+      "to": "wand-sparkles.svg"
+    },
+    {
+      "from": "fa7-solid-hand-holding-medical.svg",
+      "to": "hand-holding-medical.svg"
+    },
+    {
+      "from": "fa7-solid-house-chimney-medical.svg",
+      "to": "house-chimney-medical.svg"
+    },
+    {
+      "from": "fa7-solid-shield-heart.svg",
+      "to": "shield-heart.svg"
+    },
+    {
+      "from": "famicons-list-circle.svg",
+      "to": "list-circle.svg"
+    },
+    {
+      "from": "fluent-arrow-trending-sparkle-20-filled.svg",
+      "to": "arrow-trending-sparkle-20-filled.svg"
+    },
+    {
+      "from": "fluent-bubble-multiple-20-filled.svg",
+      "to": "bubble-multiple-20-filled.svg"
+    },
+    {
+      "from": "fluent-clock-sparkle-20-filled.svg",
+      "to": "clock-sparkle-20-filled.svg"
+    },
+    {
+      "from": "fluent-code-block-edit-16-filled.svg",
+      "to": "code-block-edit-16-filled.svg"
+    },
+    {
+      "from": "fluent-code-text-edit-20-filled.svg",
+      "to": "code-text-edit-20-filled.svg"
+    },
+    {
+      "from": "fluent-doctor-16-filled.svg",
+      "to": "doctor-16-filled.svg"
+    },
+    {
+      "from": "fluent-draw-shape-24-filled.svg",
+      "to": "draw-shape-24-filled.svg"
+    },
+    {
+      "from": "fluent-emoji-high-contrast-crystal-ball.svg",
+      "to": "crystal-ball.svg"
+    },
+    {
+      "from": "fluent-emoji-high-contrast-grey-heart.svg",
+      "to": "grey-heart.svg"
+    },
+    {
+      "from": "fluent-emoji-high-contrast-open-book.svg",
+      "to": "open-book.svg"
+    },
+    {
+      "from": "fluent-emoji-high-contrast-sunflower.svg",
+      "to": "sunflower.svg"
+    },
+    {
+      "from": "fluent-emoji-high-contrast-zzz.svg",
+      "to": "zzz.svg"
+    },
+    {
+      "from": "fluent-note-edit-24-filled.svg",
+      "to": "note-edit-24-filled.svg"
+    },
+    {
+      "from": "fluent-paint-brush-sparkle-20-filled.svg",
+      "to": "paint-brush-sparkle-20-filled.svg"
+    },
+    {
+      "from": "fluent-paint-bucket-brush-16-filled.svg",
+      "to": "paint-bucket-brush-16-filled.svg"
+    },
+    {
+      "from": "fluent-target-sparkle-24-filled.svg",
+      "to": "target-sparkle-24-filled.svg"
+    },
+    {
+      "from": "fluent-window-text-16-filled.svg",
+      "to": "window-text-16-filled.svg"
+    },
+    {
+      "from": "game-icons-bookmarklet.svg",
+      "to": "bookmarklet.svg"
+    },
+    {
+      "from": "game-icons-heart-key.svg",
+      "to": "heart-key.svg"
+    },
+    {
+      "from": "game-icons-life-bar.svg",
+      "to": "life-bar.svg"
+    },
+    {
+      "from": "game-icons-love-letter.svg",
+      "to": "love-letter.svg"
+    },
+    {
+      "from": "game-icons-pill-drop.svg",
+      "to": "pill-drop.svg"
+    },
+    {
+      "from": "game-icons-pill.svg",
+      "to": "pill.svg"
+    },
+    {
+      "from": "game-icons-pillow.svg",
+      "to": "pillow.svg"
+    },
+    {
+      "from": "garden-shapes-fill-16.svg",
+      "to": "shapes-fill-16.svg"
+    },
+    {
+      "from": "gg-card-diamonds.svg",
+      "to": "card-diamonds.svg"
+    },
+    {
+      "from": "gis-globe-star.svg",
+      "to": "globe-star.svg"
+    },
+    {
+      "from": "glyphs-bells-bold.svg",
+      "to": "bells-bold.svg"
+    },
+    {
+      "from": "glyphs-shapes-bold.svg",
+      "to": "shapes-bold.svg"
+    },
+    {
+      "from": "gravity-ui-bucket-paint.svg",
+      "to": "bucket-paint.svg"
+    },
+    {
+      "from": "gravity-ui-card-diamond.svg",
+      "to": "card-diamond.svg"
+    },
+    {
+      "from": "gravity-ui-card-heart.svg",
+      "to": "card-heart.svg"
+    },
+    {
+      "from": "gravity-ui-pin-fill.svg",
+      "to": "pin-fill-2.svg"
+    },
+    {
+      "from": "gravity-ui-thunderbolt-fill.svg",
+      "to": "thunderbolt-fill.svg"
+    },
+    {
+      "from": "healthicons-artificial-intelligence.svg",
+      "to": "artificial-intelligence.svg"
+    },
+    {
+      "from": "hugeicons-ai-content-generator-01.svg",
+      "to": "ai-content-generator-01.svg"
+    },
+    {
+      "from": "hugeicons-cards-01.svg",
+      "to": "cards-01.svg"
+    },
+    {
+      "from": "hugeicons-cards-02.svg",
+      "to": "cards-02.svg"
+    },
+    {
+      "from": "hugeicons-content-writing.svg",
+      "to": "content-writing.svg"
+    },
+    {
+      "from": "hugeicons-document-code.svg",
+      "to": "document-code.svg"
+    },
+    {
+      "from": "hugeicons-file-code-corner.svg",
+      "to": "file-code-corner.svg"
+    },
+    {
+      "from": "hugeicons-loyalty-card.svg",
+      "to": "loyalty-card.svg"
+    },
+    {
+      "from": "hugeicons-quill-write-02.svg",
+      "to": "quill-write-02.svg"
+    },
+    {
+      "from": "hugeicons-table-lamp-01.svg",
+      "to": "table-lamp-01.svg"
+    },
+    {
+      "from": "ic-round-art-track.svg",
+      "to": "round-art-track.svg"
+    },
+    {
+      "from": "ic-round-discord.svg",
+      "to": "round-discord.svg"
+    },
+    {
+      "from": "icomoon-free-alarm.svg",
+      "to": "alarm.svg"
+    },
+    {
+      "from": "icon-park-outline-oval-love-two.svg",
+      "to": "oval-love-two.svg"
+    },
+    {
+      "from": "icon-park-solid-bee.svg",
+      "to": "bee.svg"
+    },
+    {
+      "from": "icon-park-solid-butterfly.svg",
+      "to": "butterfly.svg"
+    },
+    {
+      "from": "icon-park-solid-fingernail.svg",
+      "to": "fingernail.svg"
+    },
+    {
+      "from": "icon-park-solid-game-emoji.svg",
+      "to": "game-emoji.svg"
+    },
+    {
+      "from": "icon-park-solid-game-ps.svg",
+      "to": "game-ps.svg"
+    },
+    {
+      "from": "icon-park-solid-heart-ballon.svg",
+      "to": "heart-ballon.svg"
+    },
+    {
+      "from": "icon-park-solid-honey-one.svg",
+      "to": "honey-one.svg"
+    },
+    {
+      "from": "icon-park-solid-kettle-one.svg",
+      "to": "kettle-one.svg"
+    },
+    {
+      "from": "icon-park-solid-seedling.svg",
+      "to": "seedling.svg"
+    },
+    {
+      "from": "icon-park-solid-system.svg",
+      "to": "system.svg"
+    },
+    {
+      "from": "icon-park-solid-umbrella.svg",
+      "to": "umbrella.svg"
+    },
+    {
+      "from": "ion-heart-circle.svg",
+      "to": "heart-circle.svg"
+    },
+    {
+      "from": "ion-heart-half.svg",
+      "to": "heart-half.svg"
+    },
+    {
+      "from": "ix-moon-filled.svg",
+      "to": "moon-filled.svg"
+    },
+    {
+      "from": "ix-moon.svg",
+      "to": "moon.svg"
+    },
+    {
+      "from": "jam-baidu-circle.svg",
+      "to": "baidu-circle.svg"
+    },
+    {
+      "from": "jam-directions-f.svg",
+      "to": "directions-f.svg"
+    },
+    {
+      "from": "jam-slack-circle.svg",
+      "to": "slack-circle.svg"
+    },
+    {
+      "from": "lets-icons-alarm-fill.svg",
+      "to": "alarm-fill.svg"
+    },
+    {
+      "from": "lucide-lab-pillow.svg",
+      "to": "pillow-2.svg"
+    },
+    {
+      "from": "mage-bell-notification-square-fill.svg",
+      "to": "bell-notification-square-fill.svg"
+    },
+    {
+      "from": "mage-calendar-fill.svg",
+      "to": "calendar-fill.svg"
+    },
+    {
+      "from": "mage-file-2-fill.svg",
+      "to": "file-2-fill.svg"
+    },
+    {
+      "from": "mage-message-round-square-fill.svg",
+      "to": "message-round-square-fill.svg"
+    },
+    {
+      "from": "mage-note-text-fill.svg",
+      "to": "note-text-fill.svg"
+    },
+    {
+      "from": "mage-note-with-text-fill.svg",
+      "to": "note-with-text-fill.svg"
+    },
+    {
+      "from": "mage-notification-bell-fill.svg",
+      "to": "notification-bell-fill.svg"
+    },
+    {
+      "from": "mage-pin-fill.svg",
+      "to": "pin-fill-3.svg"
+    },
+    {
+      "from": "mage-star-circle-fill.svg",
+      "to": "star-circle-fill.svg"
+    },
+    {
+      "from": "mage-verified-check-fill.svg",
+      "to": "verified-check-fill.svg"
+    },
+    {
+      "from": "majesticons-code-block-line.svg",
+      "to": "code-block-line.svg"
+    },
+    {
+      "from": "majesticons-code-block.svg",
+      "to": "code-block.svg"
+    },
+    {
+      "from": "majesticons-link-circle.svg",
+      "to": "link-circle.svg"
+    },
+    {
+      "from": "majesticons-noteblock-text.svg",
+      "to": "noteblock-text.svg"
+    },
+    {
+      "from": "majesticons-planet-ring-2.svg",
+      "to": "planet-ring-2.svg"
+    },
+    {
+      "from": "material-symbols-award-star-rounded.svg",
+      "to": "award-star-rounded.svg"
+    },
+    {
+      "from": "material-symbols-dine-heart.svg",
+      "to": "dine-heart.svg"
+    },
+    {
+      "from": "material-symbols-light-art-track-rounded.svg",
+      "to": "art-track-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-book-5-rounded.svg",
+      "to": "book-5-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-diagnosis-rounded.svg",
+      "to": "diagnosis-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-dine-heart-sharp.svg",
+      "to": "dine-heart-sharp.svg"
+    },
+    {
+      "from": "material-symbols-light-exercise.svg",
+      "to": "exercise.svg"
+    },
+    {
+      "from": "material-symbols-light-gite-rounded.svg",
+      "to": "gite-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-local-library-rounded.svg",
+      "to": "local-library-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-partner-heart-outline-rounded.svg",
+      "to": "partner-heart-outline-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-partner-heart-rounded.svg",
+      "to": "partner-heart-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-soap-rounded.svg",
+      "to": "soap-rounded.svg"
+    },
+    {
+      "from": "material-symbols-light-weekend.svg",
+      "to": "weekend.svg"
+    },
+    {
+      "from": "material-symbols-location-chip.svg",
+      "to": "location-chip.svg"
+    },
+    {
+      "from": "material-symbols-map-pin-heart-sharp.svg",
+      "to": "map-pin-heart-sharp.svg"
+    },
+    {
+      "from": "material-symbols-person-play.svg",
+      "to": "person-play.svg"
+    },
+    {
+      "from": "material-symbols-share-location-rounded.svg",
+      "to": "share-location-rounded.svg"
+    },
+    {
+      "from": "material-symbols-view-carousel.svg",
+      "to": "view-carousel.svg"
+    },
+    {
+      "from": "material-symbols-wall-art-rounded.svg",
+      "to": "wall-art-rounded.svg"
+    },
+    {
+      "from": "mdi-bell-circle.svg",
+      "to": "bell-circle.svg"
+    },
+    {
+      "from": "mdi-pill-multiple.svg",
+      "to": "pill-multiple.svg"
+    },
+    {
+      "from": "mdi-play-room.svg",
+      "to": "play-room.svg"
+    },
+    {
+      "from": "mdi-tag-heart.svg",
+      "to": "tag-heart.svg"
+    },
+    {
+      "from": "mingcute-alarm-1-fill.svg",
+      "to": "alarm-1-fill.svg"
+    },
+    {
+      "from": "mingcute-align-horizontal-center-fill.svg",
+      "to": "align-horizontal-center-fill.svg"
+    },
+    {
+      "from": "mingcute-anniversary-fill.svg",
+      "to": "anniversary-fill.svg"
+    },
+    {
+      "from": "mingcute-board-fill.svg",
+      "to": "board-fill.svg"
+    },
+    {
+      "from": "mingcute-book-4-fill.svg",
+      "to": "book-4-fill.svg"
+    },
+    {
+      "from": "mingcute-book-4-line.svg",
+      "to": "book-4-line.svg"
+    },
+    {
+      "from": "mingcute-book-6-ai-fill.svg",
+      "to": "book-6-ai-fill.svg"
+    },
+    {
+      "from": "mingcute-calendar-3-fill.svg",
+      "to": "calendar-3-fill.svg"
+    },
+    {
+      "from": "mingcute-copy-fill.svg",
+      "to": "copy-fill.svg"
+    },
+    {
+      "from": "mingcute-crystal-ball-fill.svg",
+      "to": "crystal-ball-fill.svg"
+    },
+    {
+      "from": "mingcute-diary-fill.svg",
+      "to": "diary-fill.svg"
+    },
+    {
+      "from": "mingcute-edit-2-ai-fill.svg",
+      "to": "edit-2-ai-fill.svg"
+    },
+    {
+      "from": "mingcute-github-fill-1.svg",
+      "to": "github-fill-1.svg"
+    },
+    {
+      "from": "mingcute-grid-2-fill.svg",
+      "to": "grid-2-fill.svg"
+    },
+    {
+      "from": "mingcute-love-fill.svg",
+      "to": "love-fill.svg"
+    },
+    {
+      "from": "mingcute-love-line.svg",
+      "to": "love-line.svg"
+    },
+    {
+      "from": "mingcute-mickeymouse-fill.svg",
+      "to": "mickeymouse-fill.svg"
+    },
+    {
+      "from": "mingcute-paint-brush-ai-fill.svg",
+      "to": "paint-brush-ai-fill.svg"
+    },
+    {
+      "from": "mingcute-pencil-3-ai-fill.svg",
+      "to": "pencil-3-ai-fill.svg"
+    },
+    {
+      "from": "mingcute-play-football-fill.svg",
+      "to": "play-football-fill.svg"
+    },
+    {
+      "from": "mingcute-rocket-fill.svg",
+      "to": "rocket-fill.svg"
+    },
+    {
+      "from": "mingcute-semicircle-dash-fill.svg",
+      "to": "semicircle-dash-fill.svg"
+    },
+    {
+      "from": "mingcute-shoe-fill.svg",
+      "to": "shoe-fill.svg"
+    },
+    {
+      "from": "mingcute-sleep-fill.svg",
+      "to": "sleep-fill.svg"
+    },
+    {
+      "from": "mingcute-threads-line.svg",
+      "to": "threads-line.svg"
+    },
+    {
+      "from": "mingcute-trophy-fill-1.svg",
+      "to": "trophy-fill-1.svg"
+    },
+    {
+      "from": "mingcute-wastebasket-fill.svg",
+      "to": "wastebasket-fill.svg"
+    },
+    {
+      "from": "mingcute-wind-fill.svg",
+      "to": "wind-fill.svg"
+    },
+    {
+      "from": "mynaui-arrow-down-waves-solid.svg",
+      "to": "arrow-down-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-arrow-left-waves-solid.svg",
+      "to": "arrow-left-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-arrow-right-waves-solid.svg",
+      "to": "arrow-right-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-arrow-up-waves-solid.svg",
+      "to": "arrow-up-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-asterisk-waves-solid.svg",
+      "to": "asterisk-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-bank-solid.svg",
+      "to": "bank-solid.svg"
+    },
+    {
+      "from": "mynaui-cart-solid.svg",
+      "to": "cart-solid.svg"
+    },
+    {
+      "from": "mynaui-chat-dots-solid.svg",
+      "to": "chat-dots-solid.svg"
+    },
+    {
+      "from": "mynaui-clock-waves-solid.svg",
+      "to": "clock-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-code-waves-solid-copy.svg",
+      "to": "code-waves-solid-copy.svg"
+    },
+    {
+      "from": "mynaui-code-waves-solid.svg",
+      "to": "code-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-code-waves.svg",
+      "to": "code-waves.svg"
+    },
+    {
+      "from": "mynaui-cog-one-solid.svg",
+      "to": "cog-one-solid.svg"
+    },
+    {
+      "from": "mynaui-danger-waves-solid-copy.svg",
+      "to": "danger-waves-solid-copy.svg"
+    },
+    {
+      "from": "mynaui-danger-waves-solid.svg",
+      "to": "danger-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-dollar-waves-solid.svg",
+      "to": "dollar-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-dots-waves-solid.svg",
+      "to": "dots-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-eight-waves-solid.svg",
+      "to": "eight-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-five-waves-solid.svg",
+      "to": "five-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-folder-heart-solid.svg",
+      "to": "folder-heart-solid.svg"
+    },
+    {
+      "from": "mynaui-forward-waves-solid.svg",
+      "to": "forward-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-four-waves-solid.svg",
+      "to": "four-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-git-waves-solid.svg",
+      "to": "git-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-hash-waves-solid.svg",
+      "to": "hash-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-heart-hexagon-solid.svg",
+      "to": "heart-hexagon-solid.svg"
+    },
+    {
+      "from": "mynaui-heart-waves-solid.svg",
+      "to": "heart-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-info-waves-solid.svg",
+      "to": "info-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-leaf-solid.svg",
+      "to": "leaf-solid.svg"
+    },
+    {
+      "from": "mynaui-leaves-solid.svg",
+      "to": "leaves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-a-waves-solid.svg",
+      "to": "letter-a-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-b-waves-solid.svg",
+      "to": "letter-b-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-c-waves-solid.svg",
+      "to": "letter-c-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-d-waves-solid.svg",
+      "to": "letter-d-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-e-waves-solid.svg",
+      "to": "letter-e-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-f-waves-solid.svg",
+      "to": "letter-f-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-g-waves-solid.svg",
+      "to": "letter-g-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-h-waves-solid.svg",
+      "to": "letter-h-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-i-waves-solid.svg",
+      "to": "letter-i-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-j-waves-solid.svg",
+      "to": "letter-j-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-k-waves-solid.svg",
+      "to": "letter-k-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-l-waves-solid.svg",
+      "to": "letter-l-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-m-waves-solid.svg",
+      "to": "letter-m-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-n-waves-solid.svg",
+      "to": "letter-n-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-o-waves-solid.svg",
+      "to": "letter-o-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-p-waves-solid.svg",
+      "to": "letter-p-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-q-waves-solid.svg",
+      "to": "letter-q-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-r-waves-solid.svg",
+      "to": "letter-r-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-s-waves-solid.svg",
+      "to": "letter-s-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-t-waves-solid.svg",
+      "to": "letter-t-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-u-waves-solid.svg",
+      "to": "letter-u-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-v-waves-solid.svg",
+      "to": "letter-v-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-w-waves-solid.svg",
+      "to": "letter-w-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-x-waves-solid.svg",
+      "to": "letter-x-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-y-waves-solid.svg",
+      "to": "letter-y-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-letter-z-waves-solid.svg",
+      "to": "letter-z-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-line-chart-waves-solid.svg",
+      "to": "line-chart-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-lock-waves-solid.svg",
+      "to": "lock-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-minus-waves-solid.svg",
+      "to": "minus-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-music-waves-solid.svg",
+      "to": "music-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-nine-waves-solid.svg",
+      "to": "nine-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-one-waves-solid.svg",
+      "to": "one-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-pause-waves-solid.svg",
+      "to": "pause-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-percentage-waves-solid.svg",
+      "to": "percentage-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-play-waves-solid.svg",
+      "to": "play-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-question-waves-solid.svg",
+      "to": "question-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-rewind-waves-solid.svg",
+      "to": "rewind-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-search-waves-solid-copy.svg",
+      "to": "search-waves-solid-copy.svg"
+    },
+    {
+      "from": "mynaui-search-waves-solid.svg",
+      "to": "search-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-seven-waves-solid.svg",
+      "to": "seven-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-six-waves-solid.svg",
+      "to": "six-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-slash-waves-solid.svg",
+      "to": "slash-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-stop-waves-solid.svg",
+      "to": "stop-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-three-waves-solid.svg",
+      "to": "three-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-trash-two-solid.svg",
+      "to": "trash-two-solid.svg"
+    },
+    {
+      "from": "mynaui-two-waves-solid.svg",
+      "to": "two-waves-solid.svg"
+    },
+    {
+      "from": "mynaui-zero-waves-solid.svg",
+      "to": "zero-waves-solid.svg"
+    },
+    {
+      "from": "octicon-feed-repo-16.svg",
+      "to": "feed-repo-16.svg"
+    },
+    {
+      "from": "octicon-feed-rocket-16.svg",
+      "to": "feed-rocket-16.svg"
+    },
+    {
+      "from": "octicon-feed-trophy-16.svg",
+      "to": "feed-trophy-16.svg"
+    },
+    {
+      "from": "octicon-heart-16.svg",
+      "to": "heart-16.svg"
+    },
+    {
+      "from": "pajamas-timer.svg",
+      "to": "timer.svg"
+    },
+    {
+      "from": "pepicons-pop-pill-circle.svg",
+      "to": "pill-circle.svg"
+    },
+    {
+      "from": "pepicons-pop-television-play.svg",
+      "to": "television-play.svg"
+    },
+    {
+      "from": "ph-article-ny-times-fill.svg",
+      "to": "article-ny-times-fill.svg"
+    },
+    {
+      "from": "ph-books-fill.svg",
+      "to": "books-fill.svg"
+    },
+    {
+      "from": "ph-hand-heart-fill.svg",
+      "to": "hand-heart-fill.svg"
+    },
+    {
+      "from": "ph-list-heart-fill.svg",
+      "to": "list-heart-fill.svg"
+    },
+    {
+      "from": "ph-list-star.svg",
+      "to": "list-star.svg"
+    },
+    {
+      "from": "ri-apps-2-ai-fill.svg",
+      "to": "apps-2-ai-fill.svg"
+    },
+    {
+      "from": "ri-artboard-fill.svg",
+      "to": "artboard-fill.svg"
+    },
+    {
+      "from": "ri-article-fill.svg",
+      "to": "article-fill.svg"
+    },
+    {
+      "from": "ri-chat-ai-3-fill.svg",
+      "to": "chat-ai-3-fill.svg"
+    },
+    {
+      "from": "ri-door-lock-fill.svg",
+      "to": "door-lock-fill.svg"
+    },
+    {
+      "from": "ri-mental-health-fill.svg",
+      "to": "mental-health-fill.svg"
+    },
+    {
+      "from": "ri-mental-health-line.svg",
+      "to": "mental-health-line.svg"
+    },
+    {
+      "from": "roentgen-japan-public-health-center.svg",
+      "to": "japan-public-health-center.svg"
+    },
+    {
+      "from": "si-ai-shield-fill.svg",
+      "to": "ai-shield-fill.svg"
+    },
+    {
+      "from": "si-twitter-fill.svg",
+      "to": "twitter-fill.svg"
+    },
+    {
+      "from": "solar-bell-bold.svg",
+      "to": "bell-bold.svg"
+    },
+    {
+      "from": "solar-bookmark-bold.svg",
+      "to": "bookmark-bold.svg"
+    },
+    {
+      "from": "solar-bookmark-circle-bold.svg",
+      "to": "bookmark-circle-bold.svg"
+    },
+    {
+      "from": "solar-cart-3-bold.svg",
+      "to": "cart-3-bold.svg"
+    },
+    {
+      "from": "solar-cart-5-bold.svg",
+      "to": "cart-5-bold.svg"
+    },
+    {
+      "from": "solar-cart-bold.svg",
+      "to": "cart-bold.svg"
+    },
+    {
+      "from": "solar-chat-round-like-bold.svg",
+      "to": "chat-round-like-bold.svg"
+    },
+    {
+      "from": "solar-clipboard-heart-bold.svg",
+      "to": "clipboard-heart-bold.svg"
+    },
+    {
+      "from": "solar-code-file-bold.svg",
+      "to": "code-file-bold.svg"
+    },
+    {
+      "from": "solar-document-add-bold.svg",
+      "to": "document-add-bold.svg"
+    },
+    {
+      "from": "solar-document-bold.svg",
+      "to": "document-bold.svg"
+    },
+    {
+      "from": "solar-hand-heart-bold.svg",
+      "to": "hand-heart-bold.svg"
+    },
+    {
+      "from": "solar-hand-heart-outline.svg",
+      "to": "hand-heart-outline.svg"
+    },
+    {
+      "from": "solar-hand-pills-bold.svg",
+      "to": "hand-pills-bold.svg"
+    },
+    {
+      "from": "solar-health-bold.svg",
+      "to": "health-bold.svg"
+    },
+    {
+      "from": "solar-heart-angle-bold.svg",
+      "to": "heart-angle-bold.svg"
+    },
+    {
+      "from": "solar-heart-bold.svg",
+      "to": "heart-bold.svg"
+    },
+    {
+      "from": "solar-heart-lock-bold.svg",
+      "to": "heart-lock-bold.svg"
+    },
+    {
+      "from": "solar-heart-pulse-bold.svg",
+      "to": "heart-pulse-bold.svg"
+    },
+    {
+      "from": "solar-heart-shine-bold.svg",
+      "to": "heart-shine-bold.svg"
+    },
+    {
+      "from": "solar-heart-shine-outline.svg",
+      "to": "heart-shine-outline.svg"
+    },
+    {
+      "from": "solar-list-heart-bold.svg",
+      "to": "list-heart-bold.svg"
+    },
+    {
+      "from": "solar-list-heart-outline.svg",
+      "to": "list-heart-outline.svg"
+    },
+    {
+      "from": "solar-medal-star-bold.svg",
+      "to": "medal-star-bold.svg"
+    },
+    {
+      "from": "solar-microphone-large-bold.svg",
+      "to": "microphone-large-bold.svg"
+    },
+    {
+      "from": "solar-moon-bold.svg",
+      "to": "moon-bold.svg"
+    },
+    {
+      "from": "solar-moon-linear.svg",
+      "to": "moon-linear.svg"
+    },
+    {
+      "from": "solar-moon-sleep-bold.svg",
+      "to": "moon-sleep-bold.svg"
+    },
+    {
+      "from": "solar-pin-circle-bold.svg",
+      "to": "pin-circle-bold.svg"
+    },
+    {
+      "from": "solar-pin-circle-outline.svg",
+      "to": "pin-circle-outline.svg"
+    },
+    {
+      "from": "solar-pin-list-bold.svg",
+      "to": "pin-list-bold.svg"
+    },
+    {
+      "from": "solar-shield-star-bold.svg",
+      "to": "shield-star-bold.svg"
+    },
+    {
+      "from": "solar-star-rings-bold.svg",
+      "to": "star-rings-bold.svg"
+    },
+    {
+      "from": "solar-stethoscope-bold.svg",
+      "to": "stethoscope-bold.svg"
+    },
+    {
+      "from": "stash-article-share-solid.svg",
+      "to": "article-share-solid.svg"
+    },
+    {
+      "from": "stash-article-solid.svg",
+      "to": "article-solid.svg"
+    },
+    {
+      "from": "stash-calendar-star-solid.svg",
+      "to": "calendar-star-solid.svg"
+    },
+    {
+      "from": "streamline-block-nature-moon.svg",
+      "to": "nature-moon.svg"
+    },
+    {
+      "from": "streamline-flex-give-star-remix.svg",
+      "to": "give-star-remix.svg"
+    },
+    {
+      "from": "streamline-flex-health-care-2-remix.svg",
+      "to": "health-care-2-remix.svg"
+    },
+    {
+      "from": "streamline-flex-health-care-2-solid.svg",
+      "to": "health-care-2-solid.svg"
+    },
+    {
+      "from": "streamline-flex-heart-rate-solid.svg",
+      "to": "heart-rate-solid.svg"
+    },
+    {
+      "from": "streamline-flex-home-2-remix.svg",
+      "to": "home-2-remix.svg"
+    },
+    {
+      "from": "streamline-flex-new-sticky-note-solid.svg",
+      "to": "new-sticky-note-solid.svg"
+    },
+    {
+      "from": "streamline-flex-table-lamp-2-solid.svg",
+      "to": "table-lamp-2-solid.svg"
+    },
+    {
+      "from": "streamline-plump-browser-code-1-solid.svg",
+      "to": "browser-code-1-solid.svg"
+    },
+    {
+      "from": "streamline-plump-browser-code-1.svg",
+      "to": "browser-code-1.svg"
+    },
+    {
+      "from": "streamline-plump-document-certificate-solid.svg",
+      "to": "document-certificate-solid.svg"
+    },
+    {
+      "from": "streamline-plump-feather-pen-solid.svg",
+      "to": "feather-pen-solid.svg"
+    },
+    {
+      "from": "streamline-plump-home-1-solid.svg",
+      "to": "home-1-solid.svg"
+    },
+    {
+      "from": "streamline-plump-inbox-content-remix.svg",
+      "to": "inbox-content-remix.svg"
+    },
+    {
+      "from": "streamline-plump-inbox-post-solid.svg",
+      "to": "inbox-post-solid.svg"
+    },
+    {
+      "from": "streamline-plump-location-heart-pin-solid.svg",
+      "to": "location-heart-pin-solid.svg"
+    },
+    {
+      "from": "streamline-plump-map-location-star-pin-solid.svg",
+      "to": "map-location-star-pin-solid.svg"
+    },
+    {
+      "from": "streamline-plump-painting-board-remix.svg",
+      "to": "painting-board-remix.svg"
+    },
+    {
+      "from": "streamline-plump-play-list-folder-solid.svg",
+      "to": "play-list-folder-solid.svg"
+    },
+    {
+      "from": "streamline-plump-share-lock-solid.svg",
+      "to": "share-lock-solid.svg"
+    },
+    {
+      "from": "streamline-sharp-share-code-solid.svg",
+      "to": "share-code-solid.svg"
+    },
+    {
+      "from": "streamline-ultimate-aircraft-hot-air-balloon-2-bold.svg",
+      "to": "aircraft-hot-air-balloon-2-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-book-close-bookmark-1-bold.svg",
+      "to": "book-close-bookmark-1-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-card-add-1-bold.svg",
+      "to": "card-add-1-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-card-game-heart-bold.svg",
+      "to": "card-game-heart-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-color-bucket-brush-bold.svg",
+      "to": "color-bucket-brush-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-insurance-head-bold.svg",
+      "to": "insurance-head-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-notes-paper-text-bold.svg",
+      "to": "notes-paper-text-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-office-stamp-document-bold.svg",
+      "to": "office-stamp-document-bold.svg"
+    },
+    {
+      "from": "streamline-ultimate-task-list-pin-bold.svg",
+      "to": "task-list-pin-bold.svg"
+    },
+    {
+      "from": "streamline-waning-cresent-moon-remix.svg",
+      "to": "waning-cresent-moon-remix.svg"
+    },
+    {
+      "from": "streamline-waning-cresent-moon-solid.svg",
+      "to": "waning-cresent-moon-solid.svg"
+    },
+    {
+      "from": "tabler-bottle-filled-2.svg",
+      "to": "bottle-filled-2.svg"
+    },
+    {
+      "from": "tabler-crystal-ball.svg",
+      "to": "crystal-ball-2.svg"
+    },
+    {
+      "from": "tabler-medical-cross-filled.svg",
+      "to": "medical-cross-filled.svg"
+    },
+    {
+      "from": "tabler-message-circle-code.svg",
+      "to": "message-circle-code.svg"
+    },
+    {
+      "from": "tabler-pillow.svg",
+      "to": "pillow-3.svg"
+    },
+    {
+      "from": "tabler-play-card-filled.svg",
+      "to": "play-card-filled.svg"
+    },
+    {
+      "from": "tabler-play-card-star-filled.svg",
+      "to": "play-card-star-filled.svg"
+    },
+    {
+      "from": "tdesign-tools-circle-filled.svg",
+      "to": "tools-circle-filled.svg"
+    },
+    {
+      "from": "toilet.svg",
+      "to": "toilet-2.svg"
+    },
+    {
+      "from": "uis-document-layout-left.svg",
+      "to": "document-layout-left.svg"
+    },
+    {
+      "from": "vaadin-pills.svg",
+      "to": "pills.svg"
+    }
+  ]
+}

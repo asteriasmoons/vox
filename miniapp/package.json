@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "icons:rename:check": "node scripts/rename-icons.mjs",
+    "icons:rename": "node scripts/rename-icons.mjs --write"
   },
   "dependencies": {
     "@vitejs/plugin-basic-ssl": "^1.2.0",
