@@ -1,27 +1,48 @@
 import { BottomNav } from './components/BottomNav';
 import { DashboardPage } from './pages/DashboardPage';
-import { ChannelsPage } from './pages/ChannelsPage';
-import { DraftsPage } from './pages/DraftsPage';
+import { ChannelsPage, channelCard } from './pages/ChannelsPage';
+import { DraftsPage, draftCard } from './pages/DraftsPage';
+import { CalendarPage, renderMonthGrid } from './pages/CalendarPage';
+import { AnalyticsPage, renderBarChart, renderHeatmap } from './pages/AnalyticsPage';
+import { TemplatesPage, templateCard } from './pages/TemplatesPage';
 import { initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { api } from './utils/api';
 import { insertAtCursor, wrapSelection } from './utils/formatting';
 import { qs } from './utils/dom';
-import type { Channel, Draft, InlineButtonRows, PostPayload } from './types/post';
+import type { Channel, Draft, InlineButtonRows, PostPayload, RepeatMode, Template } from './types/post';
 
-export type PageName = 'dashboard' | 'editor' | 'channels' | 'drafts' | 'settings';
+// ─── Types and State ───────────────────────────────────────────────────────────
+
+export type PageName = 'dashboard' | 'editor' | 'channels' | 'drafts' | 'settings' | 'calendar' | 'analytics' | 'templates' | 'more';
 
 interface AppState {
   page: PageName;
   editor: EditorState;
+  calendarDate: Date;
+  draftFilter: string;
+  draftSort: string;
+  templateCategory: string;
 }
 
 const state: AppState = {
   page: 'dashboard',
-  editor: { ...initialEditorState }
+  editor: { ...initialEditorState },
+  calendarDate: new Date(),
+  draftFilter: 'all',
+  draftSort: 'newest',
+  templateCategory: 'all'
 };
 
+// ─── Render, PageHtml, Navigation, MoreMenu ────────────────────────────────────
+
 export async function render(page: PageName = state.page): Promise<void> {
+  if (page === 'more') {
+    const moreMenu = document.getElementById('more-menu');
+    if (moreMenu) moreMenu.classList.toggle('open');
+    return;
+  }
+
   state.page = page;
 
   const root = qs<HTMLDivElement>('#app');
@@ -29,18 +50,22 @@ export async function render(page: PageName = state.page): Promise<void> {
   const bottomNavHtml = page === 'editor' ? '' : BottomNav(page);
   root.innerHTML = `<div class="app-shell">${pageHtml}${bottomNavHtml}</div>`;
 
-  // --- SWAP THESE TWO LINES ---
-  await hydratePage(page); // 1. Load the data and update the HTML text first
-  bindNavigation();       // 2. Then find the buttons and attach the click listeners
+  await hydratePage(page);
+  bindNavigation();
+  bindMoreMenu();
 }
 
 function getPageHtml(page: PageName): string {
   const pages: Record<PageName, string> = {
     dashboard: DashboardPage(),
-    editor: PostEditorPage(state.editor),
+    editor: PostEditorPage(state.editor) + ScheduleSheet(),
     channels: ChannelsPage(),
     drafts: DraftsPage(),
-    settings: SettingsPage()
+    settings: SettingsPage(),
+    calendar: CalendarPage(state.calendarDate),
+    analytics: AnalyticsPage(),
+    templates: TemplatesPage(),
+    more: ''
   };
 
   return pages[page];
@@ -55,56 +80,542 @@ function bindNavigation(): void {
   });
 }
 
+function bindMoreMenu(): void {
+  const toggleBtn = document.querySelector('[data-toggle-more]');
+  const moreMenu = document.getElementById('more-menu');
+  const backdrop = document.querySelector('[data-close-more]');
+
+  if (toggleBtn && moreMenu) {
+    toggleBtn.addEventListener('click', () => moreMenu.classList.toggle('open'));
+  }
+  if (backdrop && moreMenu) {
+    backdrop.addEventListener('click', () => moreMenu.classList.remove('open'));
+  }
+}
+
+// ─── hydratePage Dispatcher ────────────────────────────────────────────────────
+
 async function hydratePage(page: PageName): Promise<void> {
   if (page === 'dashboard') await hydrateDashboard();
   if (page === 'channels') await hydrateChannels();
   if (page === 'drafts') await hydrateDrafts();
+  if (page === 'calendar') await hydrateCalendar();
+  if (page === 'analytics') await hydrateAnalytics();
+  if (page === 'templates') await hydrateTemplates();
   if (page === 'editor') bindEditor();
 }
 
+// ─── Dashboard Hydration ───────────────────────────────────────────────────────
+
 async function hydrateDashboard(): Promise<void> {
   try {
-    const [drafts, channels, posts] = await Promise.all([api.getDrafts(), api.getChannels(), api.getPosts()]);
+    const [drafts, channels, posts, scheduled] = await Promise.all([
+      api.getDrafts(),
+      api.getChannels(),
+      api.getPosts(),
+      api.getScheduled()
+    ]);
     qs('#draft-count').textContent = String(drafts.length);
     qs('#channel-count').textContent = String(channels.length);
     qs('#posted-count').textContent = String(posts.length);
+    qs('#scheduled-count').textContent = String(scheduled.length);
   } catch (error) {
     console.warn(error);
     qs('#draft-count').textContent = '!';
     qs('#channel-count').textContent = '!';
     qs('#posted-count').textContent = '!';
+    qs('#scheduled-count').textContent = '!';
   }
 }
+
+// ─── Channels Hydration ────────────────────────────────────────────────────────
 
 async function hydrateChannels(): Promise<void> {
   const list = qs('#channels-list');
+  let allChannels: Channel[] = [];
+
   try {
-    const channels = await api.getChannels();
-    list.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels yet.</p>';
+    allChannels = await api.getChannels();
+    renderChannelList(allChannels, list);
   } catch (error) {
     console.warn(error);
     list.innerHTML = '<p class="muted">Channels could not be loaded right now.</p>';
+    return;
   }
+
+  const searchInput = qs<HTMLInputElement>('#channel-search');
+  const sortSelect = qs<HTMLSelectElement>('#channel-sort');
+  const addBtn = qs<HTMLButtonElement>('#add-channel-btn');
+  const addForm = document.getElementById('add-channel-form');
+  const saveBtn = document.getElementById('save-channel-btn');
+  const cancelBtn = document.getElementById('cancel-channel-btn');
+
+  searchInput.addEventListener('input', () => {
+    const filtered = filterChannels(allChannels, searchInput.value, sortSelect.value);
+    renderChannelList(filtered, list);
+    bindChannelActions(list, allChannels);
+  });
+
+  sortSelect.addEventListener('change', () => {
+    const filtered = filterChannels(allChannels, searchInput.value, sortSelect.value);
+    renderChannelList(filtered, list);
+    bindChannelActions(list, allChannels);
+  });
+
+  if (addBtn && addForm) {
+    addBtn.addEventListener('click', () => addForm.classList.toggle('hidden'));
+  }
+
+  if (cancelBtn && addForm) {
+    cancelBtn.addEventListener('click', () => addForm.classList.add('hidden'));
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      const name = qs<HTMLInputElement>('#new-channel-name').value.trim();
+      const telegramChatId = qs<HTMLInputElement>('#new-channel-chat-id').value.trim();
+      const username = qs<HTMLInputElement>('#new-channel-username').value.trim();
+      const description = qs<HTMLTextAreaElement>('#new-channel-description').value.trim();
+
+      if (!name || !telegramChatId) {
+        alert('Name and Telegram Chat ID are required.');
+        return;
+      }
+
+      try {
+        await api.saveChannel({ name, telegramChatId, username: username || undefined, description: description || undefined });
+        void render('channels');
+      } catch (error) {
+        console.warn(error);
+        alert('Could not save channel.');
+      }
+    });
+  }
+
+  bindChannelActions(list, allChannels);
 }
 
-function channelCard(channel: Channel): string {
-  return `<article class="list-card"><strong>${channel.name}</strong><span>${channel.telegramChatId}</span><p>${channel.description ?? ''}</p></article>`;
+function filterChannels(channels: Channel[], search: string, sort: string): Channel[] {
+  let filtered = channels;
+  const query = search.toLowerCase().trim();
+  if (query) {
+    filtered = filtered.filter(
+      (c) => c.name.toLowerCase().includes(query) || (c.username ?? '').toLowerCase().includes(query)
+    );
+  }
+
+  const sorted = [...filtered];
+  switch (sort) {
+    case 'name-az': sorted.sort((a, b) => a.name.localeCompare(b.name)); break;
+    case 'name-za': sorted.sort((a, b) => b.name.localeCompare(a.name)); break;
+    case 'newest': sorted.sort((a, b) => (b.connectedAt ?? '').localeCompare(a.connectedAt ?? '')); break;
+    case 'oldest': sorted.sort((a, b) => (a.connectedAt ?? '').localeCompare(b.connectedAt ?? '')); break;
+  }
+  return sorted;
 }
+
+function renderChannelList(channels: Channel[], container: Element): void {
+  container.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels yet.</p>';
+}
+
+function bindChannelActions(container: Element, allChannels: Channel[]): void {
+  container.querySelectorAll<HTMLElement>('.channel-card').forEach((card) => {
+    const channelId = card.dataset.channelId!;
+
+    card.querySelector('[data-favorite-channel]')?.addEventListener('click', async () => {
+      try {
+        await api.toggleChannelFavorite(channelId);
+        void render('channels');
+      } catch (error) {
+        console.warn(error);
+      }
+    });
+
+    card.querySelector('[data-channel-action="remove"]')?.addEventListener('click', async () => {
+      if (!confirm('Remove this channel?')) return;
+      try {
+        await api.deleteChannel(channelId);
+        void render('channels');
+      } catch (error) {
+        console.warn(error);
+        alert('Could not remove channel.');
+      }
+    });
+
+    card.querySelector('[data-channel-action="set-default"]')?.addEventListener('click', async () => {
+      try {
+        await api.setDefaultChannel(channelId);
+        void render('channels');
+      } catch (error) {
+        console.warn(error);
+        alert('Could not set default channel.');
+      }
+    });
+
+    card.querySelector('[data-channel-action="edit"]')?.addEventListener('click', () => {
+      const channel = allChannels.find((c) => c.id === channelId);
+      if (!channel) return;
+      const addForm = document.getElementById('add-channel-form');
+      if (addForm) addForm.classList.remove('hidden');
+      qs<HTMLInputElement>('#new-channel-name').value = channel.name;
+      qs<HTMLInputElement>('#new-channel-chat-id').value = channel.telegramChatId;
+      qs<HTMLInputElement>('#new-channel-username').value = channel.username ?? '';
+      qs<HTMLTextAreaElement>('#new-channel-description').value = channel.description ?? '';
+    });
+  });
+}
+
+// ─── Drafts Hydration ──────────────────────────────────────────────────────────
 
 async function hydrateDrafts(): Promise<void> {
   const list = qs('#drafts-list');
+  let allDrafts: Draft[] = [];
+  let allChannels: Channel[] = [];
+
   try {
-    const drafts = await api.getDrafts();
-    list.innerHTML = drafts.map(draftCard).join('') || '<p class="muted">No saved drafts yet.</p>';
+    [allDrafts, allChannels] = await Promise.all([api.getDrafts(), api.getChannels()]);
+    renderDraftList(allDrafts, allChannels, list);
   } catch (error) {
     console.warn(error);
     list.innerHTML = '<p class="muted">Drafts could not be loaded right now.</p>';
+    return;
+  }
+
+  const searchInput = qs<HTMLInputElement>('#draft-search');
+  const sortSelect = qs<HTMLSelectElement>('#draft-sort');
+  const bulkBar = document.getElementById('bulk-bar');
+
+  searchInput.addEventListener('input', () => {
+    const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
+    renderDraftList(filtered, allChannels, list);
+    bindDraftActions(list, allDrafts, allChannels, bulkBar);
+  });
+
+  sortSelect.addEventListener('change', () => {
+    state.draftSort = sortSelect.value;
+    const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
+    renderDraftList(filtered, allChannels, list);
+    bindDraftActions(list, allDrafts, allChannels, bulkBar);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter]').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.draftFilter = tab.dataset.filter!;
+      const filtered = filterDrafts(allDrafts, searchInput.value, sortSelect.value, state.draftFilter);
+      renderDraftList(filtered, allChannels, list);
+      bindDraftActions(list, allDrafts, allChannels, bulkBar);
+    });
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-bulk]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const action = btn.dataset.bulk as 'archive' | 'favorite' | 'delete';
+      const ids = getCheckedDraftIds();
+      if (ids.length === 0) return;
+      try {
+        await api.bulkDrafts({ ids, action });
+        void render('drafts');
+      } catch (error) {
+        console.warn(error);
+        alert('Bulk action failed.');
+      }
+    });
+  });
+
+  bindDraftActions(list, allDrafts, allChannels, bulkBar);
+}
+
+function filterDrafts(drafts: Draft[], search: string, sort: string, filter: string): Draft[] {
+  let filtered = drafts;
+
+  if (filter === 'favorites') filtered = filtered.filter((d) => d.isFavorite);
+  else if (filter === 'archived') filtered = filtered.filter((d) => d.isArchived);
+  else if (filter === 'trashed') filtered = filtered.filter((d) => d.isTrashed);
+
+  const query = search.toLowerCase().trim();
+  if (query) {
+    filtered = filtered.filter((d) => d.title.toLowerCase().includes(query));
+  }
+
+  const sorted = [...filtered];
+  switch (sort) {
+    case 'newest': sorted.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)); break;
+    case 'oldest': sorted.sort((a, b) => a.updatedAt.localeCompare(b.updatedAt)); break;
+    case 'title-az': sorted.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case 'title-za': sorted.sort((a, b) => b.title.localeCompare(a.title)); break;
+  }
+  return sorted;
+}
+
+function renderDraftList(drafts: Draft[], channels: Channel[], container: Element): void {
+  container.innerHTML = drafts.map((d) => draftCard(d, channels)).join('') || '<p class="muted">No saved drafts yet.</p>';
+}
+
+function bindDraftActions(container: Element, allDrafts: Draft[], allChannels: Channel[], bulkBar: HTMLElement | null): void {
+  container.querySelectorAll<HTMLElement>('.draft-card').forEach((card) => {
+    const draftId = card.dataset.draftId!;
+
+    card.querySelector('[data-favorite-draft]')?.addEventListener('click', async () => {
+      const draft = allDrafts.find((d) => d.id === draftId);
+      if (!draft) return;
+      try {
+        await api.updateDraft(draftId, { isFavorite: !draft.isFavorite });
+        void render('drafts');
+      } catch (error) {
+        console.warn(error);
+      }
+    });
+
+    const checkbox = card.querySelector<HTMLInputElement>('.draft-checkbox');
+    if (checkbox && bulkBar) {
+      checkbox.addEventListener('change', () => {
+        const checked = getCheckedDraftIds();
+        if (checked.length > 0) {
+          bulkBar.classList.remove('hidden');
+        } else {
+          bulkBar.classList.add('hidden');
+        }
+      });
+    }
+  });
+}
+
+function getCheckedDraftIds(): string[] {
+  const ids: string[] = [];
+  document.querySelectorAll<HTMLElement>('.draft-card').forEach((card) => {
+    const checkbox = card.querySelector<HTMLInputElement>('.draft-checkbox');
+    if (checkbox?.checked) {
+      ids.push(card.dataset.draftId!);
+    }
+  });
+  return ids;
+}
+
+// ─── Calendar Hydration ────────────────────────────────────────────────────────
+
+async function hydrateCalendar(): Promise<void> {
+  try {
+    const [drafts, scheduled, posts] = await Promise.all([
+      api.getDrafts(),
+      api.getScheduled(),
+      api.getPosts()
+    ]);
+
+    const allEvents = [
+      ...drafts.map((d) => ({ date: d.updatedAt, status: 'draft' as const })),
+      ...scheduled.map((s) => ({ date: s.schedule?.publishAt ?? s.createdAt, status: 'scheduled' as const })),
+      ...posts.map((p) => ({ date: p.createdAt, status: 'posted' as const }))
+    ];
+
+    placeCalendarEvents(allEvents);
+  } catch (error) {
+    console.warn(error);
+  }
+
+  const prevBtn = document.getElementById('cal-prev');
+  const nextBtn = document.getElementById('cal-next');
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() - 1, 1);
+      void render('calendar');
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      state.calendarDate = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth() + 1, 1);
+      void render('calendar');
+    });
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-calendar-view]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('[data-calendar-view]').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      const view = tab.dataset.calendarView;
+      if (view !== 'month') {
+        const grid = document.getElementById('calendar-grid');
+        if (grid) grid.innerHTML = '<p class="muted">Coming soon.</p>';
+      } else {
+        const year = state.calendarDate.getFullYear();
+        const month = state.calendarDate.getMonth();
+        const grid = document.getElementById('calendar-grid');
+        if (grid) grid.innerHTML = renderMonthGrid(year, month);
+        void hydrateCalendar();
+      }
+    });
+  });
+}
+
+function placeCalendarEvents(events: Array<{ date: string; status: 'draft' | 'scheduled' | 'posted' }>): void {
+  for (const event of events) {
+    const dateStr = event.date.slice(0, 10);
+    const cell = document.querySelector<HTMLElement>(`[data-date="${dateStr}"] .calendar-events`);
+    if (cell) {
+      const dot = document.createElement('span');
+      dot.className = `legend-dot ${event.status}-dot`;
+      cell.appendChild(dot);
+    }
   }
 }
 
-function draftCard(draft: Draft): string {
-  return `<article class="list-card"><strong>${draft.title}</strong><span>${new Date(draft.updatedAt).toLocaleString()}</span><p>${draft.text}</p></article>`;
+// ─── Analytics Hydration ───────────────────────────────────────────────────────
+
+async function hydrateAnalytics(): Promise<void> {
+  try {
+    const data = await api.getAnalytics();
+
+    qs('#total-posts').textContent = String(data.totalPosts);
+    qs('#analytics-drafts').textContent = String(data.totalDrafts);
+    qs('#analytics-scheduled').textContent = String(data.totalScheduled);
+    qs('#analytics-published').textContent = String(data.totalPublished);
+    qs('#total-views').textContent = data.totalViews.toLocaleString();
+    qs('#avg-views').textContent = data.averageViews.toLocaleString();
+    qs('#button-clicks').textContent = data.buttonClicks.toLocaleString();
+    qs('#engagement').textContent = `${data.engagement}%`;
+    qs('#pub-streak').textContent = `${data.publishingStreak} days`;
+    qs('#best-day').textContent = data.bestDay;
+    qs('#best-hour').textContent = `${String(data.bestHour).padStart(2, '0')}:00`;
+
+    const weeklyContainer = document.getElementById('weekly-chart');
+    if (weeklyContainer) {
+      const weeklyData = data.weeklyChart.map((d) => ({ label: d.day, value: d.count }));
+      weeklyContainer.innerHTML = renderBarChart(weeklyData, 'weekly-bars');
+    }
+
+    const monthlyContainer = document.getElementById('monthly-chart');
+    if (monthlyContainer) {
+      const monthlyData = data.monthlyChart.map((d) => ({ label: d.month, value: d.count }));
+      monthlyContainer.innerHTML = renderBarChart(monthlyData, 'monthly-bars');
+    }
+
+    const heatmapContainer = document.getElementById('heatmap-chart');
+    if (heatmapContainer) {
+      heatmapContainer.innerHTML = renderHeatmap(data.heatmap);
+    }
+  } catch (error) {
+    console.warn(error);
+    qs('#total-posts').textContent = '!';
+    qs('#analytics-drafts').textContent = '!';
+    qs('#analytics-scheduled').textContent = '!';
+    qs('#analytics-published').textContent = '!';
+    qs('#total-views').textContent = '!';
+    qs('#avg-views').textContent = '!';
+    qs('#button-clicks').textContent = '!';
+    qs('#engagement').textContent = '!';
+    qs('#pub-streak').textContent = '!';
+    qs('#best-day').textContent = '!';
+    qs('#best-hour').textContent = '!';
+  }
 }
+
+// ─── Templates Hydration ───────────────────────────────────────────────────────
+
+async function hydrateTemplates(): Promise<void> {
+  const list = qs('#templates-list');
+  let allTemplates: Template[] = [];
+
+  try {
+    allTemplates = await api.getTemplates();
+    renderTemplateList(allTemplates, list);
+  } catch (error) {
+    console.warn(error);
+    list.innerHTML = '<p class="muted">Templates could not be loaded right now.</p>';
+    return;
+  }
+
+  const searchInput = qs<HTMLInputElement>('#template-search');
+
+  searchInput.addEventListener('input', () => {
+    const filtered = filterTemplates(allTemplates, searchInput.value, state.templateCategory);
+    renderTemplateList(filtered, list);
+    bindTemplateActions(list, allTemplates);
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-category]').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('[data-category]').forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      state.templateCategory = pill.dataset.category!;
+      const filtered = filterTemplates(allTemplates, searchInput.value, state.templateCategory);
+      renderTemplateList(filtered, list);
+      bindTemplateActions(list, allTemplates);
+    });
+  });
+
+  bindTemplateActions(list, allTemplates);
+}
+
+function filterTemplates(templates: Template[], search: string, category: string): Template[] {
+  let filtered = templates;
+  if (category && category !== 'all') {
+    filtered = filtered.filter((t) => t.category === category);
+  }
+  const query = search.toLowerCase().trim();
+  if (query) {
+    filtered = filtered.filter((t) => t.name.toLowerCase().includes(query));
+  }
+  return filtered;
+}
+
+function renderTemplateList(templates: Template[], container: Element): void {
+  container.innerHTML = templates.map(templateCard).join('') || '<p class="muted">No templates found.</p>';
+}
+
+function bindTemplateActions(container: Element, allTemplates: Template[]): void {
+  container.querySelectorAll<HTMLElement>('.template-card').forEach((card) => {
+    const templateId = card.dataset.templateId!;
+    const template = allTemplates.find((t) => t.id === templateId);
+    if (!template) return;
+
+    card.querySelector('[data-template-action="use"]')?.addEventListener('click', () => {
+      state.editor.title = template.name;
+      state.editor.text = template.text;
+      state.editor.buttons = template.buttons.length > 0 ? template.buttons.map((row) => row.map((b) => ({ ...b }))) : [[{ text: '', url: '' }]];
+      void render('editor');
+    });
+
+    card.querySelector('[data-template-action="duplicate"]')?.addEventListener('click', async () => {
+      try {
+        await api.saveTemplate({
+          name: `${template.name} (Copy)`,
+          category: template.category,
+          text: template.text,
+          buttons: template.buttons
+        });
+        void render('templates');
+      } catch (error) {
+        console.warn(error);
+        alert('Could not duplicate template.');
+      }
+    });
+
+    card.querySelector('[data-template-action="delete"]')?.addEventListener('click', async () => {
+      if (!confirm('Delete this template?')) return;
+      try {
+        await api.deleteTemplate(templateId);
+        void render('templates');
+      } catch (error) {
+        console.warn(error);
+        alert('Could not delete template.');
+      }
+    });
+
+    card.querySelector('[data-favorite-template]')?.addEventListener('click', async () => {
+      try {
+        await api.updateTemplate(templateId, { isFavorite: !template.isFavorite });
+        void render('templates');
+      } catch (error) {
+        console.warn(error);
+      }
+    });
+  });
+}
+
+// ─── Editor Binding (All Existing Code) ────────────────────────────────────────
 
 function bindEditor(): void {
   const titleInput = qs<HTMLInputElement>('#post-title');
@@ -113,7 +624,10 @@ function bindEditor(): void {
 
   textarea.value = state.editor.text;
 
-  titleInput.addEventListener('input', () => (state.editor.title = titleInput.value));
+  titleInput.addEventListener('input', () => {
+    state.editor.title = titleInput.value;
+    refreshPreview();
+  });
   channelSelect.addEventListener('change', () => (state.editor.channelId = channelSelect.value));
   textarea.addEventListener('input', () => {
     state.editor.text = textarea.value;
@@ -130,6 +644,9 @@ function bindEditor(): void {
 
   bindButtonBuilder();
   void hydrateEditorChannels(channelSelect);
+
+  const previewRoot = document.querySelector('#preview-root');
+  if (previewRoot) bindSpoilers(previewRoot);
 
   qs<HTMLButtonElement>('#save-draft').addEventListener('click', async () => {
     syncEditorFields(titleInput, channelSelect, textarea);
@@ -152,6 +669,8 @@ function bindEditor(): void {
       alert('Post could not be published right now.');
     }
   });
+
+  bindScheduleSheet(titleInput, channelSelect, textarea);
 }
 
 async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<void> {
@@ -273,11 +792,155 @@ function moveButton(element: HTMLElement, direction: number): void {
   void render('editor');
 }
 
+// ─── Schedule Sheet ────────────────────────────────────────────────────────────
+
+function ScheduleSheet(): string {
+  const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = new Date().toISOString().slice(0, 10);
+  const nowTime = `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
+
+  const repeatOptions: RepeatMode[] = ['never', 'daily', 'weekly', 'monthly', 'yearly', 'custom'];
+  const repeatButtons = repeatOptions
+    .map((mode) => {
+      const active = mode === 'never' ? ' active' : '';
+      const label = mode.charAt(0).toUpperCase() + mode.slice(1);
+      return `<button class="filter-pill${active}" data-repeat="${mode}">${label}</button>`;
+    })
+    .join('');
+
+  return `
+    <div class="schedule-overlay" id="schedule-sheet" style="display:none;">
+      <div class="schedule-backdrop" id="schedule-backdrop"></div>
+      <div class="schedule-panel glass-card">
+        <h2>Schedule Post</h2>
+
+        <label class="field-label">Date
+          <input type="date" id="schedule-date" class="input" value="${today}" />
+        </label>
+
+        <label class="field-label">Time
+          <input type="time" id="schedule-time" class="input" value="${nowTime}" />
+        </label>
+
+        <div class="field-label">Timezone
+          <span class="code-pill">${detectedTz}</span>
+        </div>
+
+        <div class="field-label">Repeat</div>
+        <div class="pill-scroll" id="repeat-options">${repeatButtons}</div>
+
+        <div id="custom-repeat" class="hidden" style="margin-top:0.5rem;">
+          <label class="field-label">Every
+            <div class="toolbar-row">
+              <input type="number" id="custom-interval" class="input" value="1" min="1" style="width:5rem;" />
+              <select id="custom-unit" class="input">
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+              </select>
+            </div>
+          </label>
+        </div>
+
+        <div class="editor-actions" style="margin-top:1rem;">
+          <button class="secondary-action" id="schedule-cancel">Cancel</button>
+          <button class="primary-action" id="schedule-confirm">Schedule</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function bindScheduleSheet(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement): void {
+  const scheduleBtn = document.getElementById('schedule-btn');
+  const sheet = document.getElementById('schedule-sheet');
+  const backdrop = document.getElementById('schedule-backdrop');
+  const cancelBtn = document.getElementById('schedule-cancel');
+  const confirmBtn = document.getElementById('schedule-confirm');
+  const customRepeatDiv = document.getElementById('custom-repeat');
+
+  let selectedRepeat: RepeatMode = 'never';
+
+  if (!scheduleBtn || !sheet) return;
+
+  const openSheet = () => { sheet.style.display = 'flex'; };
+  const closeSheet = () => { sheet.style.display = 'none'; };
+
+  scheduleBtn.addEventListener('click', openSheet);
+  if (backdrop) backdrop.addEventListener('click', closeSheet);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeSheet);
+
+  document.querySelectorAll<HTMLButtonElement>('#repeat-options [data-repeat]').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#repeat-options [data-repeat]').forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      selectedRepeat = pill.dataset.repeat as RepeatMode;
+      if (customRepeatDiv) {
+        if (selectedRepeat === 'custom') {
+          customRepeatDiv.classList.remove('hidden');
+        } else {
+          customRepeatDiv.classList.add('hidden');
+        }
+      }
+    });
+  });
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async () => {
+      syncEditorFields(titleInput, channelSelect, textarea);
+
+      const dateVal = qs<HTMLInputElement>('#schedule-date').value;
+      const timeVal = qs<HTMLInputElement>('#schedule-time').value;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      if (!dateVal || !timeVal) {
+        alert('Please select a date and time.');
+        return;
+      }
+
+      const publishAt = new Date(`${dateVal}T${timeVal}`).toISOString();
+
+      const payload = createPayload('scheduled');
+      payload.schedule = {
+        publishAt,
+        timezone,
+        repeat: selectedRepeat
+      };
+
+      if (selectedRepeat === 'custom') {
+        const interval = Number(qs<HTMLInputElement>('#custom-interval').value) || 1;
+        const unit = qs<HTMLSelectElement>('#custom-unit').value as 'hours' | 'days' | 'weeks' | 'months';
+        payload.schedule.customInterval = interval;
+        payload.schedule.customUnit = unit;
+      }
+
+      try {
+        await api.schedulePost(payload);
+        alert('Post scheduled.');
+        closeSheet();
+      } catch (error) {
+        console.warn(error);
+        alert('Could not schedule post.');
+      }
+    });
+  }
+}
+
+// ─── Shared Utilities ──────────────────────────────────────────────────────────
+
 function refreshPreview(): void {
   const root = document.querySelector('#preview-root');
   if (!root) return;
 
   import('./components/PostPreview').then(({ PostPreview }) => {
-    root.innerHTML = PostPreview(state.editor.text, state.editor.buttons);
+    root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, state.editor.title);
+    bindSpoilers(root);
+  });
+}
+
+function bindSpoilers(container: Element): void {
+  container.querySelectorAll<HTMLElement>('tg-spoiler').forEach((spoiler) => {
+    spoiler.addEventListener('click', () => spoiler.classList.toggle('revealed'));
   });
 }

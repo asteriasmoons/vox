@@ -120,49 +120,6 @@
   flex: 1 1 72px;
 }
 
-.post-preview {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.preview-bubble {
-  min-height: 140px;
-  white-space: pre-wrap;
-  line-height: 1.5;
-  padding: 16px;
-  border-radius: 24px 24px 24px 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  overflow-wrap: anywhere;
-}
-
-.preview-buttons {
-  display: grid;
-  gap: 8px;
-}
-
-.preview-button-row {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 8px;
-}
-
-.preview-button-row a {
-  display: grid;
-  place-items: center;
-  min-height: 42px;
-  padding: 0 12px;
-  border-radius: 14px;
-  background: rgba(0, 219, 255, 0.14);
-  border: 1px solid rgba(0, 219, 255, 0.26);
-  color: #dffaff;
-  font-weight: 800;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
 .editor-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

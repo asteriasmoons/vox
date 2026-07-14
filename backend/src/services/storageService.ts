@@ -4,7 +4,12 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const dataRoot = path.resolve(__dirname, '../../src/data');
+
+// Resolve data directory relative to the source tree so it works in both
+// dev (tsx src/…) and production (node dist/…).  __dirname will be either
+// src/services or dist/services — going up two levels reaches the backend
+// root, then into src/data.
+const dataRoot = path.resolve(__dirname, '..', '..', 'src', 'data');
 
 export async function readJsonFile<T>(fileName: string, fallback: T): Promise<T> {
   const filePath = path.join(dataRoot, fileName);

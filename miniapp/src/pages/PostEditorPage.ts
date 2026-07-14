@@ -67,14 +67,15 @@ export function PostEditorPage(state: EditorState): string {
         <div class="section-heading">
           <div>
             <h3>Live Preview</h3>
-            <p>What your Telegram post will feel like.</p>
+            <p>Exactly how your message will look in Telegram.</p>
           </div>
         </div>
-        <div id="preview-root">${PostPreview(state.text, state.buttons)}</div>
+        <div id="preview-root">${PostPreview(state.text, state.buttons, state.title)}</div>
       `, 'preview-card')}
 
       <div class="editor-actions">
         <button class="secondary-action" id="save-draft">Save Draft</button>
+        <button class="secondary-action" id="schedule-btn">Schedule</button>
         <button class="primary-action" id="publish-now">Publish Now</button>
       </div>
     </main>

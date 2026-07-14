@@ -1,0 +1,191 @@
+/* ── Telegram Message Preview ── */
+
+.tg-preview {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.tg-chat-bg {
+  padding: 14px 10px;
+  background: #0e1621;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(33, 60, 87, 0.38) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(23, 46, 69, 0.3) 0%, transparent 50%);
+  min-height: 120px;
+}
+
+.tg-message-group {
+  max-width: 100%;
+  display: grid;
+  gap: 4px;
+}
+
+/* ── Bubble ── */
+
+.tg-bubble {
+  position: relative;
+  max-width: 100%;
+  padding: 8px 12px 6px;
+  border-radius: 14px 14px 14px 4px;
+  background: #212d3b;
+  color: #e8e8e8;
+  font-size: 15px;
+  line-height: 1.45;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.tg-bubble-content {
+  min-width: 0;
+}
+
+.tg-msg-title {
+  display: block;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tg-placeholder {
+  color: rgba(232, 232, 232, 0.36);
+  font-style: italic;
+}
+
+/* ── Timestamp & check ── */
+
+.tg-meta {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 4px -4px -2px 12px;
+  font-size: 12px;
+  color: rgba(232, 232, 232, 0.42);
+  user-select: none;
+}
+
+.tg-check {
+  width: 16px;
+  height: 11px;
+  color: rgba(232, 232, 232, 0.42);
+}
+
+/* ── Inline formatting (matches Telegram rendering) ── */
+
+.tg-bubble b,
+.tg-bubble strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.tg-bubble i,
+.tg-bubble em {
+  font-style: italic;
+}
+
+.tg-bubble u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tg-bubble s {
+  text-decoration: line-through;
+}
+
+/* Inline code */
+.tg-bubble code {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13.5px;
+  color: #e8e8e8;
+}
+
+/* Code block */
+.tg-bubble pre {
+  margin: 6px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 13.5px;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+  color: #e8e8e8;
+}
+
+.tg-bubble pre code {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-size: inherit;
+}
+
+/* Blockquote – Telegram's left-bordered style */
+.tg-bubble blockquote {
+  margin: 6px 0;
+  padding: 4px 0 4px 10px;
+  border-left: 3px solid rgba(120, 170, 220, 0.6);
+  color: rgba(232, 232, 232, 0.82);
+}
+
+/* Spoiler – blurred until tapped */
+.tg-bubble tg-spoiler,
+.tg-bubble .tg-spoiler {
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 0.2s ease, background 0.2s ease;
+  filter: blur(5px);
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tg-bubble tg-spoiler.revealed,
+.tg-bubble .tg-spoiler.revealed {
+  filter: none;
+  background: none;
+  cursor: default;
+}
+
+/* ── Inline Keyboard ── */
+
+.tg-keyboard {
+  display: grid;
+  gap: 4px;
+}
+
+.tg-keyboard-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.tg-keyboard-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #2a3a4a;
+  color: #6ab2f2;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.tg-keyboard-btn:active {
+  background: #334d66;
+}
