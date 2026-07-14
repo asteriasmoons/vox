@@ -119,7 +119,8 @@
   position: sticky;
   top: max(10px, var(--vox-safe-top));
   z-index: 30;
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   justify-content: center;
   gap: 8px;
