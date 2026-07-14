@@ -219,7 +219,7 @@ function renderChannelList(channels: Channel[], container: Element): void {
 }
 
 function bindChannelActions(container: Element, allChannels: Channel[]): void {
-  container.querySelectorAll<HTMLElement>('.channel-card').forEach((card) => {
+  container.querySelectorAll<HTMLElement>('.ch-card').forEach((card) => {
     const channelId = card.dataset.channelId!;
 
     card.querySelector('[data-favorite-channel]')?.addEventListener('click', async () => {
@@ -451,12 +451,18 @@ async function hydrateCalendar(): Promise<void> {
 }
 
 function placeCalendarEvents(events: Array<{ date: string; status: 'draft' | 'scheduled' | 'posted' }>): void {
+  const colors: Record<string, string> = {
+    draft: 'rgba(247,237,255,0.32)',
+    scheduled: '#00dbff',
+    posted: '#10b981'
+  };
   for (const event of events) {
     const dateStr = event.date.slice(0, 10);
-    const cell = document.querySelector<HTMLElement>(`[data-date="${dateStr}"] .calendar-events`);
+    const cell = document.querySelector<HTMLElement>(`[data-events-date="${dateStr}"]`);
     if (cell) {
       const dot = document.createElement('span');
-      dot.className = `legend-dot ${event.status}-dot`;
+      dot.className = 'cal-event-dot';
+      dot.style.background = colors[event.status] || '#fff';
       cell.appendChild(dot);
     }
   }
@@ -566,7 +572,7 @@ function renderTemplateList(templates: Template[], container: Element): void {
 }
 
 function bindTemplateActions(container: Element, allTemplates: Template[]): void {
-  container.querySelectorAll<HTMLElement>('.template-card').forEach((card) => {
+  container.querySelectorAll<HTMLElement>('.tpl-card').forEach((card) => {
     const templateId = card.dataset.templateId!;
     const template = allTemplates.find((t) => t.id === templateId);
     if (!template) return;

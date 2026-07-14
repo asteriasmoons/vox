@@ -4,29 +4,30 @@ import { Channel } from '../types/post';
 
 export function channelCard(channel: Channel): string {
   const initial = channel.name.charAt(0).toUpperCase();
-  const bgColor = channel.avatarColor || '#888';
-  const username = channel.username ? `<span class="muted">@${channel.username}</span>` : '';
+  const bgColor = channel.avatarColor || '#8000fe';
+  const username = channel.username ? `@${channel.username}` : '';
   const members = channel.memberCount != null ? channel.memberCount.toLocaleString() : '—';
   const defaultBadge = channel.isDefault
-    ? '<span class="status-badge status-default">Default</span>'
+    ? '<span class="ch-badge-default">DEFAULT</span>'
     : '';
-  const starClass = channel.isFavorite ? 'star-btn filled' : 'star-btn';
+  const starClass = channel.isFavorite ? 'star-btn active' : 'star-btn';
 
   return `
-    <div class="channel-card list-card" data-channel-id="${channel.id}">
-      <div class="avatar-circle" style="background:${bgColor}">${initial}</div>
-      <div class="list-card-body">
-        <strong>${channel.name}</strong>
-        ${username}
-        <span class="muted">ID: ${channel.telegramChatId}</span>
-        <span class="muted">Members: ${members}</span>
-        ${defaultBadge}
+    <div class="ch-card" data-channel-id="${channel.id}">
+      <div class="ch-top">
+        <div class="ch-avatar" style="background:${bgColor}">${initial}</div>
+        <div class="ch-info">
+          <strong>${channel.name}</strong>
+          ${username ? `<span class="ch-username">${username}</span>` : ''}
+          <span class="ch-meta">ID: ${channel.telegramChatId} · Members: ${members}</span>
+          ${defaultBadge}
+        </div>
+        <button class="${starClass}" data-favorite-channel="${channel.id}">&#9733;</button>
       </div>
-      <button class="${starClass}" data-favorite-channel="${channel.id}">&#9733;</button>
-      <div class="action-row">
+      <div class="ch-actions">
         <button class="small-action" data-channel-action="edit">Edit</button>
         <button class="small-action" data-channel-action="set-default">Set Default</button>
-        <button class="small-action" data-channel-action="remove">Remove</button>
+        <button class="small-action danger" data-channel-action="remove">Remove</button>
       </div>
     </div>
   `;
@@ -39,14 +40,14 @@ export function ChannelsPage(): string {
       ${GlassCard(`
         <div class="toolbar-row">
           <input type="text" id="channel-search" class="input" placeholder="Search channels..." />
-          <select id="channel-sort" class="input">
+          <select id="channel-sort" class="input" style="flex:0 0 auto;width:auto;min-width:120px;">
             <option value="name-az">Name A-Z</option>
             <option value="name-za">Name Z-A</option>
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
           </select>
         </div>
-        <button class="primary-action" id="add-channel-btn">Add Channel</button>
+        <button class="primary-action" id="add-channel-btn" style="margin-top:10px;">Add Channel</button>
       `)}
       ${GlassCard(`<div id="channels-list" class="list-stack"><p class="muted">Loading channels...</p></div>`)}
       <div id="add-channel-form" class="hidden">
@@ -64,9 +65,9 @@ export function ChannelsPage(): string {
           <label class="field-label">Description (optional)
             <textarea id="new-channel-description" class="input" rows="3" placeholder="Channel description..."></textarea>
           </label>
-          <div class="action-row">
-            <button class="primary-action" id="save-channel-btn">Save</button>
-            <button class="small-action" id="cancel-channel-btn">Cancel</button>
+          <div class="toolbar-row" style="margin-top:6px;">
+            <button class="primary-action" id="save-channel-btn" style="flex:1;">Save</button>
+            <button class="secondary-action" id="cancel-channel-btn" style="flex:1;">Cancel</button>
           </div>
         `)}
       </div>

@@ -7,36 +7,40 @@ export function renderMonthGrid(year: number, month: number): string {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = new Date();
-  const todayStr =
-    today.getFullYear() === year && today.getMonth() === month
-      ? String(today.getDate())
-      : '';
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const todayDate = isCurrentMonth ? today.getDate() : -1;
 
-  const headers = DAY_NAMES.map(d => `<div class="calendar-header-cell">${d}</div>`).join('');
+  const headers = DAY_NAMES.map(d => `<div class="cal-day-header">${d}</div>`).join('');
 
   const cells: string[] = [];
-  const totalCells = 42;
 
-  for (let i = 0; i < totalCells; i++) {
-    const dayNum = i - firstDay + 1;
-    if (dayNum < 1 || dayNum > daysInMonth) {
-      cells.push(`<div class="calendar-day empty"></div>`);
-    } else {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-      const todayClass = String(dayNum) === todayStr ? ' today' : '';
-      cells.push(`
-        <div class="calendar-day${todayClass}" data-date="${dateStr}">
-          <span class="day-number">${dayNum}</span>
-          <div class="calendar-events"></div>
-        </div>
-      `);
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    cells.push('<div class="cal-day empty"></div>');
+  }
+
+  // Day cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const todayClass = d === todayDate ? ' today' : '';
+    cells.push(`
+      <div class="cal-day${todayClass}" data-date="${dateStr}">
+        <span class="cal-day-num">${d}</span>
+        <div class="cal-events" data-events-date="${dateStr}"></div>
+      </div>
+    `);
+  }
+
+  // Pad remaining cells to fill last row
+  const totalUsed = firstDay + daysInMonth;
+  const remainder = totalUsed % 7;
+  if (remainder > 0) {
+    for (let i = 0; i < 7 - remainder; i++) {
+      cells.push('<div class="cal-day empty"></div>');
     }
   }
 
-  return `
-    <div class="calendar-grid-header">${headers}</div>
-    <div class="calendar-grid">${cells.join('')}</div>
-  `;
+  return `${headers}${cells.join('')}`;
 }
 
 export function CalendarPage(date: Date = new Date()): string {
@@ -59,20 +63,20 @@ export function CalendarPage(date: Date = new Date()): string {
         </div>
       `)}
       ${GlassCard(`
-        <div class="month-nav">
-          <button class="small-action" id="cal-prev">&lt;</button>
-          <strong id="cal-month-label">${monthNames[month]} ${year}</strong>
-          <button class="small-action" id="cal-next">&gt;</button>
+        <div class="cal-nav">
+          <button class="cal-nav-btn" id="cal-prev">‹</button>
+          <strong class="cal-nav-label" id="cal-month-label">${monthNames[month]} ${year}</strong>
+          <button class="cal-nav-btn" id="cal-next">›</button>
         </div>
-        <div id="calendar-grid" class="calendar-grid">
+        <div id="calendar-grid" class="cal-grid">
           ${renderMonthGrid(year, month)}
         </div>
       `)}
       ${GlassCard(`
-        <div class="event-legend">
-          <span class="legend-dot draft-dot"></span> Draft
-          <span class="legend-dot scheduled-dot"></span> Scheduled
-          <span class="legend-dot posted-dot"></span> Posted
+        <div class="cal-legend">
+          <span><span class="cal-dot" style="background:rgba(247,237,255,0.32)"></span> Draft</span>
+          <span><span class="cal-dot" style="background:#00dbff"></span> Scheduled</span>
+          <span><span class="cal-dot" style="background:#10b981"></span> Posted</span>
         </div>
       `)}
     </main>
