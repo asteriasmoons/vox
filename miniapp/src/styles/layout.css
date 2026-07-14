@@ -7,6 +7,10 @@
     calc(104px + var(--vox-safe-bottom)) max(clamp(14px, 4vw, 28px), calc(var(--vox-safe-left) + 14px));
 }
 
+.app-shell::before {
+  content: none;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -155,7 +159,16 @@
   }
 }
 
+@media (max-width: 600px) {
+  .app-shell::before {
+    content: "";
+    display: block;
+    height: 188px;
+  }
+}
+
 @media (max-width: 430px) {
+
   .app-shell {
     padding-inline: 12px;
   }
