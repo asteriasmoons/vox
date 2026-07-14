@@ -116,7 +116,7 @@
 .nav-item small { font-size: 0.68rem; }
 
 .back-button {
-  position: sticky;
+  position: static;
   top: max(10px, var(--vox-safe-top));
   z-index: 30;
   display: flex;
