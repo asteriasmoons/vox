@@ -10,7 +10,7 @@
   --vox-safe-right: max(env(safe-area-inset-right, 0px), var(--vox-tg-safe-right, 0px));
   --vox-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--vox-tg-safe-bottom, 0px));
   --vox-safe-left: max(env(safe-area-inset-left, 0px), var(--vox-tg-safe-left, 0px));
-  --vox-shell-top-offset: max(14px, calc(var(--vox-safe-top) + 14px), calc(var(--vox-tg-chrome-top-fallback, 0px) + 14px));
+  --vox-shell-top-offset: max(14px, calc(var(--vox-safe-top) + 14px));
 }
 
 * { box-sizing: border-box; }
