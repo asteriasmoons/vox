@@ -1,10 +1,10 @@
 import type { PageName } from '../router';
 
 const items: Array<{ page: PageName; label: string; icon: string }> = [
-  { page: 'dashboard', label: 'Home', icon: '◆' },
-  { page: 'channels', label: 'Channels', icon: '◈' },
-  { page: 'drafts', label: 'Drafts', icon: '◇' },
-  { page: 'settings', label: 'Settings', icon: '⚙' }
+  { page: 'dashboard', label: 'Home', icon: '/icons/home-2-remix.svg' },
+  { page: 'channels', label: 'Channels', icon: '/icons/slack-circle.svg' },
+  { page: 'drafts', label: 'Drafts', icon: '/icons/pencilburst.svg' },
+  { page: 'settings', label: 'Settings', icon: '/icons/cog-one-solid.svg' }
 ];
 
 export function BottomNav(active: PageName): string {
@@ -13,12 +13,12 @@ export function BottomNav(active: PageName): string {
       ${items
         .map(
           (item) => `
-          <button class="nav-item ${active === item.page ? 'active' : ''}" data-page="${item.page}">
-            <span>${item.icon}</span>
+          <button class="nav-item ${active === item.page ? "active" : ""}" data-page="${item.page}">
+            <img class="nav-icon" src="${item.icon}" alt="" aria-hidden="true" />
             <small>${item.label}</small>
-          </button>`
+          </button>`,
         )
-        .join('')}
+        .join("")}
     </nav>
   `;
 }
