@@ -17,16 +17,10 @@ export function initTelegramMiniApp(): void {
       const deviceTop = safeArea.top ?? 0;
       const contentTop = contentSafeArea.top ?? 0;
 
-      // contentSafeAreaInset.top includes Telegram's header measured from
-      // the viewport top.  When it reports 0 (older clients or first paint
-      // before the event fires) and we're NOT fullscreen, estimate the
-      // Telegram header at 56 px below the device safe-area.
-      const topInset = contentTop > 0
-        ? contentTop
-        : webApp.isFullscreen
-          ? deviceTop
-          : deviceTop + 56;
-
+      // safeAreaInset.top  = device chrome (status bar / notch)
+      // contentSafeAreaInset.top = Telegram's header BELOW the device chrome
+      // They must be summed, not maxed, to clear both layers.
+      const topInset = deviceTop + contentTop;
       const shellTopOffset = topInset + 14;
 
       root.classList.add('telegram-miniapp');
