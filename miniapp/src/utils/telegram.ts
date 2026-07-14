@@ -17,9 +17,10 @@ export function initTelegramMiniApp(): void {
     root.style.setProperty('--vox-tg-safe-left', `${Math.max(contentSafeArea.left ?? 0, safeArea.left ?? 0)}px`);
     root.style.setProperty('--vox-tg-viewport-height', `${webApp.viewportStableHeight || webApp.viewportHeight || window.innerHeight}px`);
 
-    // Older Telegram clients can report zero content-safe-area values while still
-    // drawing floating launch chrome over the webview.
-    root.style.setProperty('--vox-tg-chrome-top-fallback', isMobileTelegram && topInset === 0 && !webApp.isFullscreen ? '92px' : '0px');
+    // Telegram can report a partial top inset while still drawing the floating
+    // Close/menu chrome over channel-list launches. Reserve the full chrome zone
+    // whenever mobile Telegram is not in fullscreen.
+    root.style.setProperty('--vox-tg-chrome-top-fallback', isMobileTelegram && !webApp.isFullscreen ? '124px' : '0px');
   };
 
   applyTelegramLayout();
