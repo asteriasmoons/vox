@@ -38,7 +38,10 @@ export function createPayload(state: EditorState, status: PostPayload['status'])
 
 export function PostEditorPage(state: EditorState): string {
   return `
-    <button class="back-button" data-page="dashboard" type="button">← Back</button>
+    <button class="back-button" data-page="dashboard" type="button" aria-label="Back to home">
+      <span aria-hidden="true">←</span>
+      <span>Home</span>
+    </button>
     ${Header('Post Editor', 'Compose rich Telegram announcements with inline buttons.')}
     <main class="page-stack editor-grid">
       ${GlassCard(`

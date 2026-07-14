@@ -1,8 +1,10 @@
 .app-shell {
-  width: min(100%, 720px);
+  width: min(100%, 1120px);
   margin: 0 auto;
   min-height: 100vh;
-  padding: 18px 16px 104px;
+  min-height: 100dvh;
+  padding: max(14px, env(safe-area-inset-top)) clamp(14px, 4vw, 28px)
+    calc(104px + env(safe-area-inset-bottom));
 }
 
 .app-header {
@@ -10,14 +12,17 @@
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  width: min(100%, 720px);
+  margin: 0 auto;
   padding: 12px 2px 22px;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: clamp(2rem, 9vw, 3.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.06em;
+  font-size: clamp(2.1rem, 8vw, 3.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .app-header p {
@@ -36,8 +41,8 @@
 
 .orb-logo {
   flex: 0 0 auto;
-  width: 56px;
-  height: 56px;
+  width: clamp(48px, 11vw, 58px);
+  height: clamp(48px, 11vw, 58px);
   border-radius: 20px;
   display: grid;
   place-items: center;
@@ -50,12 +55,14 @@
 .page-stack {
   display: grid;
   gap: 16px;
+  width: min(100%, 720px);
+  margin: 0 auto;
 }
 
 .bottom-nav {
   position: fixed;
   left: 50%;
-  bottom: 14px;
+  bottom: calc(12px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 20;
   width: min(calc(100% - 24px), 680px);
@@ -67,7 +74,9 @@
   background: rgba(16, 9, 29, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  contain: layout paint;
 }
 
 .nav-item {
@@ -78,6 +87,8 @@
   display: grid;
   gap: 2px;
   place-items: center;
+  min-width: 0;
+  min-height: 58px;
 }
 
 .nav-item.active {
@@ -99,3 +110,82 @@
 }
 
 .nav-item small { font-size: 0.68rem; }
+
+.back-button {
+  position: sticky;
+  top: max(10px, env(safe-area-inset-top));
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 8px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 850;
+  background: rgba(16, 9, 29, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.34);
+}
+
+.back-button span:first-child {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+@media (min-width: 760px) {
+  .app-shell {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .app-header {
+    width: min(100%, 900px);
+  }
+
+  .page-stack {
+    width: min(100%, 900px);
+  }
+
+  .bottom-nav {
+    width: min(calc(100% - 48px), 720px);
+  }
+}
+
+@media (max-width: 430px) {
+  .app-shell {
+    padding-inline: 12px;
+  }
+
+  .app-header {
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+
+  .app-header p {
+    font-size: 0.92rem;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+  }
+
+  .bottom-nav {
+    gap: 4px;
+    padding: 8px;
+    border-radius: 24px;
+  }
+
+  .nav-item {
+    min-height: 56px;
+    border-radius: 17px;
+  }
+
+  .nav-icon {
+    width: 19px;
+    height: 19px;
+  }
+}

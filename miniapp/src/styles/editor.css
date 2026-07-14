@@ -18,7 +18,7 @@
 }
 
 .editor-textarea {
-  min-height: 220px;
+  min-height: min(44vh, 260px);
   padding: 16px;
   resize: vertical;
   line-height: 1.5;
@@ -29,18 +29,27 @@
   gap: 8px;
   overflow-x: auto;
   padding: 4px 0 12px;
+  margin-inline: -2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+
+.toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbar button {
   flex: 0 0 auto;
-  min-width: 42px;
-  min-height: 38px;
+  min-width: 44px;
+  min-height: 42px;
   padding: 0 12px;
   border-radius: 14px;
   color: #fff;
   font-weight: 850;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.1);
+  scroll-snap-align: start;
 }
 
 .section-heading {
@@ -49,6 +58,7 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+  min-width: 0;
 }
 
 .section-heading p {
@@ -74,6 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .builder-row-top button,
@@ -81,6 +92,7 @@
   color: rgba(247, 237, 255, 0.82);
   background: rgba(255,255,255,0.08);
   border-radius: 12px;
+  min-height: 44px;
   padding: 8px 10px;
 }
 
@@ -104,9 +116,14 @@
   flex-wrap: wrap;
 }
 
+.button-actions button {
+  flex: 1 1 72px;
+}
+
 .post-preview {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .preview-bubble {
@@ -117,6 +134,7 @@
   border-radius: 24px 24px 24px 8px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow-wrap: anywhere;
 }
 
 .preview-buttons {
@@ -127,6 +145,7 @@
 .preview-button-row {
   display: grid;
   grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 8px;
 }
 
@@ -140,10 +159,57 @@
   border: 1px solid rgba(0, 219, 255, 0.26);
   color: #dffaff;
   font-weight: 800;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .editor-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .editor-grid {
+    width: min(100%, 1040px);
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+    align-items: start;
+  }
+
+  .editor-card {
+    grid-row: span 3;
+  }
+
+  .preview-card {
+    position: sticky;
+    top: 18px;
+  }
+
+  .editor-actions {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .editor-grid {
+    gap: 14px;
+  }
+
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .section-heading .small-action {
+    width: 100%;
+  }
+
+  .builder-row-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editor-actions {
+    gap: 10px;
+  }
 }
