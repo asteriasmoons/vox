@@ -34,16 +34,18 @@ export function channelCard(channel: Channel): string {
   return `
     <div class="ch-card" data-channel-id="${channel.id}">
       <div class="ch-top">
-        ${avatar}
-        <div class="ch-info">
-          <strong>${channel.name}</strong>
-          ${username ? `<span class="ch-username">${username}</span>` : ''}
-          ${channel.description ? `<p class="ch-description">${channel.description}</p>` : ''}
-          <span class="ch-meta">Members: ${members}</span>
-          <span class="ch-access ${accessClass}">${accessLabel}</span>
-          <div class="ch-badges">${sourceBadge}${defaultBadge}</div>
+        <div class="ch-media">
+          ${avatar}
         </div>
         <button class="${starClass}" data-favorite-channel="${channel.id}">&#9733;</button>
+      </div>
+      <div class="ch-info">
+        <strong>${channel.name}</strong>
+        ${username ? `<span class="ch-username">${username}</span>` : ''}
+        ${channel.description ? `<p class="ch-description">${channel.description}</p>` : ''}
+        <span class="ch-meta">Members: ${members}</span>
+        <span class="ch-access ${accessClass}">${accessLabel}</span>
+        <div class="ch-badges">${sourceBadge}${defaultBadge}</div>
       </div>
       <div class="ch-actions">
         <button class="small-action" data-channel-action="set-default">Set Default</button>
