@@ -20,9 +20,9 @@ export function DashboardPage(): string {
       `)}
       ${GlassCard(`
         <h2>Quick Links</h2>
-        <div style="display:grid;gap:10px;margin-top:12px;">
-          <button class="secondary-action" data-page="calendar">View Calendar</button>
-          <button class="secondary-action" data-page="templates">Browse Templates</button>
+        <div class="quick-link-grid">
+          <button class="primary-action quick-link-action" data-page="calendar">View Calendar</button>
+          <button class="primary-action quick-link-action" data-page="templates">Browse Templates</button>
         </div>
       `)}
     </main>

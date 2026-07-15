@@ -91,7 +91,14 @@ export function renderDayView(date: Date): string {
 
   return `
     <div class="day-view-header">
-      <strong>${dayName}, ${monthName} ${date.getDate()}</strong>
+      <div class="day-date-badge">
+        <span>${dayName.slice(0, 3)}</span>
+        <strong>${date.getDate()}</strong>
+      </div>
+      <div>
+        <span class="day-view-kicker">Day Calendar</span>
+        <strong>${dayName}, ${monthName} ${date.getDate()}</strong>
+      </div>
     </div>
     <div class="day-view-body">${hours.join('')}</div>
   `;

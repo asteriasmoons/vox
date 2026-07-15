@@ -9,7 +9,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
+    const body = await response.text();
+    let message = body;
+
+    try {
+      const parsed = JSON.parse(body) as { error?: string; message?: string };
+      message = parsed.error ?? parsed.message ?? body;
+    } catch {
+      // Plain text error bodies are already usable.
+    }
+
     throw new Error(message || `Request failed: ${response.status}`);
   }
 
@@ -18,7 +27,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   // ── Channels ──
-  getChannels: (params?: { search?: string; sort?: string }) => {
+  getChannels: (params?: { search?: string; sort?: string; refresh?: string }) => {
     const query = buildQuery(params);
     return request<Channel[]>(`/api/channels${query}`);
   },

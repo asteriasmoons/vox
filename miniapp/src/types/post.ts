@@ -19,6 +19,20 @@ export interface Channel {
   isFavorite?: boolean;
   connectedAt?: string;
   avatarColor?: string;
+  source?: 'default' | 'manual';
+  photo?: ChannelPhoto;
+  photoUrl?: string;
+  botCanAccess?: boolean;
+  botIsAdmin?: boolean;
+  accessStatus?: 'accessible' | 'admin' | 'not_admin' | 'inaccessible' | 'unresolved';
+  accessError?: string;
+}
+
+export interface ChannelPhoto {
+  smallFileId?: string;
+  smallFileUniqueId?: string;
+  bigFileId?: string;
+  bigFileUniqueId?: string;
 }
 
 export interface PostPayload {

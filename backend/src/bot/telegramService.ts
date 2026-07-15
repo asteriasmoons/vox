@@ -17,8 +17,12 @@ export async function publishPostToTelegram(post: PostPayload): Promise<number> 
     throw new Error(`Channel not found for id: ${post.channelId}`);
   }
 
+  if (!channel.telegramChatId || !channel.botCanAccess) {
+    throw new Error(`The bot cannot publish to channel: ${channel.username ? `@${channel.username}` : channel.name}`);
+  }
+
   const bot = getTelegramClient();
-  const message = await bot.sendMessage(channel.telegramChatId, post.text, {
+  const message = await bot.sendMessage(Number(channel.telegramChatId), post.text, {
     parse_mode: post.parseMode,
     reply_markup: toReplyMarkup(post.buttons),
     disable_web_page_preview: false

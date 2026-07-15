@@ -46,6 +46,16 @@
 
 .ghost-action { width: 100%; }
 
+.quick-link-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.quick-link-action {
+  box-shadow: 0 10px 28px rgba(128, 0, 254, 0.26);
+}
+
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

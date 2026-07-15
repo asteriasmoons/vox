@@ -360,41 +360,106 @@
 /* Day view */
 
 .day-view-header {
-  padding: 8px 0 12px;
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.16), rgba(0, 219, 255, 0.12));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-date-badge {
+  width: 62px;
+  height: 62px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  gap: 0;
+  background: linear-gradient(135deg, #e019d4, #8000fe, #00dbff);
+  box-shadow: 0 14px 32px rgba(128, 0, 254, 0.28);
+}
+
+.day-date-badge span {
+  align-self: end;
+  font-size: 0.7rem;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.day-date-badge strong {
+  align-self: start;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.day-view-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #00dbff;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .day-view-body {
   display: grid;
-  gap: 0;
+  gap: 6px;
+  max-height: min(62vh, 620px);
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.day-view-body::-webkit-scrollbar {
+  display: none;
 }
 
 .day-hour-row {
   display: grid;
-  grid-template-columns: 54px 1fr;
-  min-height: 36px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  grid-template-columns: 58px 1fr;
+  min-height: 48px;
+  align-items: stretch;
 }
 
 .day-hour-label {
-  font-size: 0.68rem;
-  color: rgba(247, 237, 255, 0.36);
-  padding: 4px 6px 4px 0;
+  font-size: 0.7rem;
+  color: rgba(247, 237, 255, 0.42);
+  padding: 10px 8px 0 0;
   text-align: right;
   white-space: nowrap;
 }
 
 .day-hour-slot {
-  padding: 2px 4px;
-  min-height: 36px;
+  position: relative;
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.day-hour-slot::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .day-event {
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 0.74rem;
-  font-weight: 600;
-  margin-bottom: 2px;
+  position: relative;
+  z-index: 1;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 950;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -596,7 +661,9 @@
 
 .tpl-grid {
   display: grid;
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  align-items: stretch;
+  gap: 16px;
 }
 
 .tpl-card {
@@ -604,7 +671,10 @@
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.07);
   display: grid;
+  grid-template-rows: auto auto minmax(4.2em, 1fr) auto;
   gap: 8px;
+  min-width: 0;
+  min-height: 232px;
 }
 
 .tpl-header {
@@ -639,9 +709,11 @@
 }
 
 .tpl-footer {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: end;
   gap: 8px;
+  min-width: 0;
 }
 
 .tpl-footer .star-btn {
@@ -649,15 +721,15 @@
 }
 
 .tpl-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  flex-wrap: wrap;
-  flex: 1;
+  min-width: 0;
 }
 
 .tpl-actions .small-action {
-  flex: 1;
-  min-width: 60px;
+  min-width: 0;
+  padding-inline: 10px;
 }
 
 /* Template preview modal */
@@ -746,6 +818,107 @@
 
 /* ── 5. Channel Management ── */
 
+.channel-picker-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.channel-picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.channel-picker-heading h3 {
+  margin: 0 0 4px;
+}
+
+.channel-picker-heading p {
+  margin: 0;
+  color: rgba(247, 237, 255, 0.54);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.channel-picker-label,
+.selected-channel-kicker {
+  color: #00dbff;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.channel-select-wrap {
+  position: relative;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.92), rgba(128, 0, 254, 0.86), rgba(0, 219, 255, 0.86));
+  box-shadow: 0 18px 42px rgba(128, 0, 254, 0.22);
+}
+
+.channel-select {
+  width: 100%;
+  min-height: 58px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 23px;
+  padding: 0 48px 0 18px;
+  color: #fff;
+  background:
+    linear-gradient(145deg, rgba(42, 33, 56, 0.96), rgba(24, 16, 39, 0.96)),
+    rgba(255, 255, 255, 0.08);
+  font-weight: 950;
+  outline: none;
+}
+
+.channel-select:disabled {
+  color: rgba(247, 237, 255, 0.48);
+}
+
+.channel-select-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.channel-picker-status {
+  min-height: 18px;
+  color: rgba(247, 237, 255, 0.52);
+  font-size: 0.82rem;
+}
+
+.channel-picker-status.ok,
+.ch-access.ok {
+  color: #10b981;
+}
+
+.channel-picker-status.warn,
+.ch-access.warn {
+  color: #f59e0b;
+}
+
+.channel-add-copy {
+  margin: 4px 0 12px;
+  color: rgba(247, 237, 255, 0.54);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.channel-detail-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
 .ch-card {
   padding: 14px;
   border-radius: 20px;
@@ -761,16 +934,25 @@
   align-items: start;
 }
 
-.ch-avatar {
+.ch-avatar,
+.ch-photo {
   width: 44px;
   height: 44px;
   border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ch-avatar {
   display: grid;
   place-items: center;
   font-weight: 800;
   font-size: 1.1rem;
   color: #fff;
-  flex-shrink: 0;
+}
+
+.ch-photo {
+  display: block;
+  object-fit: cover;
 }
 
 .ch-info {
@@ -788,12 +970,31 @@
   font-size: 0.82rem;
 }
 
+.ch-description {
+  margin: 2px 0;
+  color: rgba(247, 237, 255, 0.58);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
 .ch-meta {
   font-size: 0.78rem;
   color: rgba(247, 237, 255, 0.42);
 }
 
-.ch-badge-default {
+.ch-access {
+  font-size: 0.78rem;
+}
+
+.ch-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.ch-badge-default,
+.ch-badge-source {
   display: inline-block;
   width: fit-content;
   padding: 2px 8px;
@@ -806,6 +1007,11 @@
   letter-spacing: 0.04em;
 }
 
+.ch-badge-source {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 237, 255, 0.58);
+}
+
 .ch-actions {
   display: flex;
   gap: 6px;
@@ -815,6 +1021,17 @@
 .ch-actions .small-action {
   flex: 1;
   min-width: 70px;
+}
+
+@media (max-width: 430px) {
+  .channel-picker-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .channel-picker-heading .small-action {
+    width: 100%;
+  }
 }
 
 /* ── 6. Scheduling Sheet ── */

@@ -49,12 +49,17 @@ export function PostEditorPage(state: EditorState): string {
         <input id="post-title" class="input" value="${state.title}" placeholder="Launch update, beta invite, weekly note..." />
 
         <label class="field-label">Channel</label>
-        <select id="channel-id" class="input">
-          <option value="">Choose a channel</option>
-          ${state.channels
-            .map((channel) => `<option value="${channel.id}" ${channel.id === state.channelId ? 'selected' : ''}>${channel.name}</option>`)
-            .join('')}
-        </select>
+        <div class="editor-channel-select-wrap">
+          <select id="channel-id" class="input editor-channel-select">
+            <option value="">Loading bot channels...</option>
+            ${state.channels
+              .map((channel) => `<option value="${channel.id}" ${channel.id === state.channelId ? 'selected' : ''}>${channel.name}</option>`)
+              .join('')}
+          </select>
+          <span class="editor-channel-select-icon" aria-hidden="true">⌄</span>
+        </div>
+        <p id="editor-channel-status" class="editor-channel-status">Loading channels the bot can access...</p>
+        <div id="editor-channel-preview" class="editor-channel-preview"></div>
 
         <label class="field-label">Announcement</label>
         ${RichTextToolbar()}

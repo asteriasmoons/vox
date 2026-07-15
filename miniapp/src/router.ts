@@ -133,80 +133,151 @@ async function hydrateDashboard(): Promise<void> {
 // ─── Channels Hydration ────────────────────────────────────────────────────────
 
 async function hydrateChannels(): Promise<void> {
+  const picker = qs<HTMLSelectElement>('#channel-picker');
+  const detail = qs('#selected-channel-detail');
   const list = qs('#channels-list');
-  let allChannels: Channel[] = [];
-
-  try {
-    allChannels = await api.getChannels();
-    renderChannelList(allChannels, list);
-  } catch (error) {
-    console.warn(error);
-    list.innerHTML = '<p class="muted">Channels could not be loaded right now.</p>';
-    return;
-  }
-
-  const searchInput = qs<HTMLInputElement>('#channel-search');
+  const status = document.getElementById('channel-picker-status');
   const refreshBtn = document.getElementById('refresh-channels-btn');
   const discoverInput = qs<HTMLInputElement>('#discover-input');
   const discoverBtn = document.getElementById('discover-btn');
   const discoverStatus = document.getElementById('discover-status');
+  let allChannels: Channel[] = [];
 
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    const filtered = query
-      ? allChannels.filter(c => c.name.toLowerCase().includes(query) || (c.username ?? '').toLowerCase().includes(query))
-      : allChannels;
-    renderChannelList(filtered, list);
-    bindChannelActions(list, allChannels);
+  try {
+    allChannels = await api.refreshChannels();
+  } catch (error) {
+    console.warn(error);
+    try {
+      allChannels = await api.getChannels();
+      if (status) {
+        status.textContent = 'Using saved channels. Sync could not reach Telegram right now.';
+      }
+    } catch {
+      picker.innerHTML = '<option>No channels available</option>';
+      picker.disabled = true;
+      detail.innerHTML = '<p class="muted">Channels could not be loaded right now.</p>';
+      list.innerHTML = '<p class="muted">Channels could not be loaded right now.</p>';
+      if (status) status.textContent = 'Bot channels unavailable.';
+      return;
+    }
+  }
+
+  renderChannelPicker(allChannels, picker, detail, status);
+  renderChannelList(allChannels, list);
+  bindChannelActions(detail);
+  bindChannelActions(list);
+
+  picker.addEventListener('change', () => {
+    renderSelectedChannel(allChannels, picker.value, detail);
+    bindChannelActions(detail);
   });
 
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', async () => {
-      refreshBtn.textContent = 'Refreshing...';
-      try {
-        await api.refreshChannels();
-        void render('channels');
-      } catch (error) {
-        console.warn(error);
-        refreshBtn.textContent = 'Refresh';
+  refreshBtn?.addEventListener('click', async () => {
+    refreshBtn.textContent = 'Syncing...';
+    try {
+      allChannels = await api.refreshChannels();
+      renderChannelPicker(allChannels, picker, detail, status);
+      renderChannelList(allChannels, list);
+      bindChannelActions(detail);
+      bindChannelActions(list);
+    } catch (error) {
+      console.warn(error);
+      if (status) status.textContent = 'Could not sync Telegram access right now.';
+    } finally {
+      refreshBtn.textContent = 'Sync';
+    }
+  });
+
+  discoverBtn?.addEventListener('click', async () => {
+    const identifier = discoverInput.value.trim();
+    if (!identifier) return;
+
+    discoverBtn.textContent = 'Verifying...';
+    if (discoverStatus) {
+      discoverStatus.className = 'channel-picker-status';
+      discoverStatus.textContent = '';
+    }
+
+    try {
+      const channel = await api.discoverChannel(identifier);
+      discoverInput.value = '';
+      allChannels = await api.getChannels({ refresh: 'true' });
+      renderChannelPicker(allChannels, picker, detail, status);
+      picker.value = channel.id;
+      renderSelectedChannel(allChannels, channel.id, detail);
+      renderChannelList(allChannels, list);
+      bindChannelActions(detail);
+      bindChannelActions(list);
+
+      if (discoverStatus) {
+        discoverStatus.classList.add('ok');
+        discoverStatus.textContent = `Added ${channel.username ? `@${channel.username}` : channel.name}.`;
       }
-    });
+    } catch (error) {
+      if (discoverStatus) {
+        discoverStatus.classList.add('warn');
+        discoverStatus.textContent = error instanceof Error ? error.message : 'Could not add channel.';
+      }
+    } finally {
+      discoverBtn.textContent = 'Verify & Add';
+    }
+  });
+}
+
+function renderChannelPicker(channels: Channel[], picker: HTMLSelectElement, detail: Element, status: Element | null): void {
+  const sorted = sortChannelsForPicker(channels);
+
+  if (sorted.length === 0) {
+    picker.innerHTML = '<option>No channels available</option>';
+    picker.disabled = true;
+    detail.innerHTML = `
+      <div class="channel-detail-empty">
+        <p class="muted">No channels are connected yet. Add the bot as an admin to a Telegram channel, then sync again.</p>
+      </div>
+    `;
+    if (status) status.textContent = 'No bot-accessible channels found.';
+    return;
   }
 
-  if (discoverBtn && discoverInput) {
-    discoverBtn.addEventListener('click', async () => {
-      const identifier = discoverInput.value.trim();
-      if (!identifier) return;
+  picker.disabled = false;
+  picker.innerHTML = sorted
+    .map((channel) => `<option value="${channel.id}">${channel.name}${channel.username ? ` · @${channel.username}` : ''}</option>`)
+    .join('');
 
-      discoverBtn.textContent = 'Looking up...';
-      if (discoverStatus) discoverStatus.textContent = '';
+  const selected = sorted.find((channel) => channel.isDefault) ?? sorted[0];
+  picker.value = selected.id;
+  renderSelectedChannel(sorted, selected.id, detail);
+  if (status) status.textContent = `${sorted.length} channel${sorted.length === 1 ? '' : 's'} available to the bot.`;
+}
 
-      try {
-        const channel = await api.discoverChannel(identifier);
-        if (discoverStatus) {
-          discoverStatus.style.color = '#10b981';
-          discoverStatus.textContent = `Added "${channel.name}" successfully.`;
-        }
-        discoverInput.value = '';
-        void render('channels');
-      } catch (error) {
-        if (discoverStatus) {
-          discoverStatus.style.color = '#f87171';
-          discoverStatus.textContent = error instanceof Error ? error.message : 'Channel not found.';
-        }
-        discoverBtn.textContent = 'Add';
-      }
-    });
-  }
-
-  bindChannelActions(list, allChannels);
+function sortChannelsForPicker(channels: Channel[]): Channel[] {
+  return [...channels].sort((a, b) => {
+    if (a.isDefault !== b.isDefault) return a.isDefault ? -1 : 1;
+    if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function renderChannelList(channels: Channel[], container: Element): void {
-  container.innerHTML = channels.map(channelCard).join('') || '<p class="muted">No channels connected. Add one below.</p>';
+  const sorted = sortChannelsForPicker(channels);
+  container.innerHTML = sorted.map(channelCard).join('') || '<p class="muted">No channels connected.</p>';
 }
 
-function bindChannelActions(container: Element, allChannels: Channel[]): void {
+function renderSelectedChannel(channels: Channel[], channelId: string, detail: Element): void {
+  const selected = channels.find((channel) => channel.id === channelId);
+
+  if (!selected) {
+    detail.innerHTML = '<p class="muted">Select a channel to view connection details.</p>';
+    return;
+  }
+
+  detail.innerHTML = `
+    <div class="selected-channel-kicker">Selected channel</div>
+    ${channelCard(selected)}
+  `;
+}
+
+function bindChannelActions(container: Element): void {
   container.querySelectorAll<HTMLElement>('.ch-card').forEach((card) => {
     const channelId = card.dataset.channelId!;
 
@@ -737,7 +808,10 @@ function bindEditor(): void {
     state.editor.title = titleInput.value;
     refreshPreview();
   });
-  channelSelect.addEventListener('change', () => (state.editor.channelId = channelSelect.value));
+  channelSelect.addEventListener('change', () => {
+    state.editor.channelId = channelSelect.value;
+    renderEditorChannelPreview();
+  });
   textarea.addEventListener('input', () => {
     state.editor.text = textarea.value;
     refreshPreview();
@@ -759,6 +833,12 @@ function bindEditor(): void {
 
   qs<HTMLButtonElement>('#save-draft').addEventListener('click', async () => {
     syncEditorFields(titleInput, channelSelect, textarea);
+    const selectedChannel = getSelectedEditorChannel();
+    if (!selectedChannel || !canPublishToChannel(selectedChannel)) {
+      alert('Choose a channel the bot can access before saving this draft.');
+      return;
+    }
+
     try {
       await api.saveDraft(createPayload('draft'));
       alert('Draft saved.');
@@ -770,6 +850,12 @@ function bindEditor(): void {
 
   qs<HTMLButtonElement>('#publish-now').addEventListener('click', async () => {
     syncEditorFields(titleInput, channelSelect, textarea);
+    const selectedChannel = getSelectedEditorChannel();
+    if (!selectedChannel || !canPublishToChannel(selectedChannel)) {
+      alert('Choose a channel the bot can access before publishing.');
+      return;
+    }
+
     try {
       await api.publishPost(createPayload('posted'));
       alert('Published to Telegram.');
@@ -783,25 +869,80 @@ function bindEditor(): void {
 }
 
 async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<void> {
+  const status = document.getElementById('editor-channel-status');
+
   try {
-    if (state.editor.channels.length === 0) {
-      state.editor.channels = await api.getChannels();
+    try {
+      state.editor.channels = sortChannelsForPicker(await api.refreshChannels());
+      if (status) status.textContent = `${state.editor.channels.length} bot-accessible channel${state.editor.channels.length === 1 ? '' : 's'} loaded.`;
+    } catch (error) {
+      console.warn(error);
+      state.editor.channels = sortChannelsForPicker(await api.getChannels());
+      if (status) status.textContent = 'Using saved channels. Sync could not reach Telegram right now.';
     }
 
-    state.editor.channelId = state.editor.channelId || state.editor.channels[0]?.id || '';
+    if (state.editor.channels.length === 0) {
+      state.editor.channelId = '';
+      channelSelect.disabled = true;
+      channelSelect.innerHTML = '<option value="">No bot channels available</option>';
+      if (status) status.textContent = 'No channels available. Add the bot as an admin to a channel, then sync Channels.';
+      return;
+    }
+
+    if (!state.editor.channels.some((channel) => channel.id === state.editor.channelId)) {
+      state.editor.channelId = state.editor.channels.find((channel) => channel.isDefault)?.id || state.editor.channels[0]?.id || '';
+    }
+
     channelSelect.disabled = false;
     channelSelect.innerHTML = [
-      '<option value="">Choose a channel</option>',
+      '<option value="">Choose a bot channel</option>',
       ...state.editor.channels.map(
-        (channel) => `<option value="${channel.id}" ${channel.id === state.editor.channelId ? 'selected' : ''}>${channel.name}</option>`
+        (channel) => `<option value="${channel.id}" ${channel.id === state.editor.channelId ? 'selected' : ''}>${channel.name}${channel.username ? ` · @${channel.username}` : ''}${canPublishToChannel(channel) ? '' : ' · needs access'}</option>`
       )
     ].join('');
     channelSelect.value = state.editor.channelId;
+    renderEditorChannelPreview();
   } catch (error) {
     console.warn(error);
     channelSelect.disabled = true;
     channelSelect.innerHTML = '<option value="">Channels unavailable</option>';
+    if (status) status.textContent = 'Channels unavailable. The bot cannot load publish destinations right now.';
+    renderEditorChannelPreview();
   }
+}
+
+function getSelectedEditorChannel(): Channel | undefined {
+  return state.editor.channels.find((channel) => channel.id === state.editor.channelId);
+}
+
+function canPublishToChannel(channel: Channel): boolean {
+  return Boolean(channel.telegramChatId && channel.botCanAccess);
+}
+
+function renderEditorChannelPreview(): void {
+  const preview = document.getElementById('editor-channel-preview');
+  if (!preview) return;
+
+  const channel = getSelectedEditorChannel();
+  if (!channel) {
+    preview.innerHTML = '<p class="muted">Select a channel to preview the publish destination.</p>';
+    return;
+  }
+
+  const initial = (channel.name || channel.username || '?').charAt(0).toUpperCase();
+  const avatar = channel.photoUrl
+    ? `<img class="editor-channel-photo" src="${channel.photoUrl}" alt="" />`
+    : `<div class="editor-channel-avatar" style="background:${channel.avatarColor || '#8000fe'}">${initial}</div>`;
+
+  preview.innerHTML = `
+    ${avatar}
+    <div class="editor-channel-preview-copy">
+      <strong>${channel.name}</strong>
+      ${channel.username ? `<span>@${channel.username}</span>` : ''}
+      ${channel.description ? `<p>${channel.description}</p>` : ''}
+      ${canPublishToChannel(channel) ? '' : '<em>Bot access is not ready for publishing.</em>'}
+    </div>
+  `;
 }
 
 function syncEditorFields(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement): void {
