@@ -11,7 +11,9 @@ async function initializeTelegram(): Promise<void> {
   const bot = getTelegramClient();
   const webhookUrl = `${requirePublicAppUrl()}/api/telegram/webhook`;
 
-  await bot.setWebHook(webhookUrl);
+  await bot.setWebHook(webhookUrl, {
+    allowed_updates: ["message", "channel_post", "inline_query"],
+  });
   console.log(`Telegram webhook registered at ${webhookUrl}`);
 }
 
