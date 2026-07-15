@@ -6,7 +6,9 @@ export function Header(title: string, subtitle: string): string {
         <h1>${title}</h1>
         <p>${subtitle}</p>
       </div>
-      <div class="orb-logo">V</div>
+      <div class="orb-logo" aria-hidden="true">
+        <img src="/vox.svg" alt="" />
+      </div>
     </header>
   `;
 }
