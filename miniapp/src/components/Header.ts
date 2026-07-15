@@ -7,7 +7,7 @@ export function Header(title: string, subtitle: string): string {
         <p>${subtitle}</p>
       </div>
       <div class="orb-logo" aria-hidden="true">
-        <img src="/vox.svg" alt="" />
+        <img src="/vox.svg?v=header-logo" alt="" />
       </div>
     </header>
   `;

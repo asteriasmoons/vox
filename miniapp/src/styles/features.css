@@ -860,14 +860,18 @@
   text-transform: uppercase;
 }
 
-.selected-channel-heading-card {
-  padding-block: 14px;
-}
-
-.selected-channel-heading {
+.selected-channel-title-card {
+  position: relative;
   display: flex;
   align-items: center;
-  min-height: 22px;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(20, 12, 34, 0.94), rgba(16, 9, 29, 0.94)) padding-box,
+    linear-gradient(135deg, rgba(224, 25, 212, 0.9), rgba(128, 0, 254, 0.86), rgba(0, 219, 255, 0.9)) border-box;
+  border: 1px solid transparent;
+  box-shadow: 0 16px 36px rgba(0, 219, 255, 0.08);
 }
 
 .channel-select-wrap {

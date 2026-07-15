@@ -76,7 +76,9 @@ export function ChannelsPage(): string {
           <div id="channel-picker-status" class="channel-picker-status">Checking bot access...</div>
         </div>
       `)}
-      ${GlassCard(`<div class="selected-channel-heading"><span class="selected-channel-kicker">Selected channel</span></div>`, 'selected-channel-heading-card')}
+      <section class="selected-channel-title-card">
+        <span class="selected-channel-kicker">Selected channel</span>
+      </section>
       ${GlassCard(`<div id="selected-channel-detail" class="channel-detail-empty"><p class="muted">Select a channel to view connection details.</p></div>`)}
       ${GlassCard(`
         <h3>Add Channel</h3>
