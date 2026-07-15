@@ -2,6 +2,7 @@ import type TelegramBot from 'node-telegram-bot-api';
 import { defaultChannelUsernames } from '../config/defaultChannels.js';
 import { getTelegramClient } from '../bot/telegramClient.js';
 import type { Channel, ChannelPhoto } from '../types/post.js';
+import { env } from '../utils/env.js';
 import { readJsonFile, writeJsonFile } from './storageService.js';
 
 const fileName = 'channels.json';
@@ -47,7 +48,7 @@ export async function getChannels(options: { forceRefresh?: boolean } = {}): Pro
   const stored = await readStoredChannels();
   const defaultChannels = await resolveDefaultChannels(stored, options.forceRefresh === true);
   const manualChannels = stored.filter((channel) => channel.source !== 'default');
-  const combined = dedupeChannels([...defaultChannels, ...manualChannels]);
+  const combined = dedupeChannels([...defaultChannels, ...manualChannels]).map(ensurePhotoUrl);
 
   await saveStoredChannels(mergeStoredChannels(stored, combined));
   return sortChannels(combined);
@@ -120,14 +121,14 @@ export async function setDefaultChannel(id: string): Promise<Channel[]> {
 }
 
 function normalizeStoredChannel(channel: Channel): StoredChannel {
-  return {
+  return ensurePhotoUrl({
     ...channel,
     id: channel.id || channel.telegramChatId,
     telegramChatId: channel.telegramChatId || channel.id,
     username: normalizeUsername(channel.username),
     source: channel.source ?? 'manual',
     avatarColor: channel.avatarColor ?? pickColor(channel.id || channel.telegramChatId || channel.username || channel.name),
-  };
+  });
 }
 
 async function resolveDefaultChannels(stored: StoredChannel[], forceRefresh: boolean): Promise<StoredChannel[]> {
@@ -212,7 +213,7 @@ async function resolveChannelFromTelegram(
     connectedAt: previous?.connectedAt ?? new Date().toISOString(),
     avatarColor: previous?.avatarColor ?? pickColor(id),
     photo,
-    photoUrl: photo ? `/api/channels/${encodeURIComponent(id)}/photo` : undefined,
+    photoUrl: photo ? buildPhotoUrl(id) : undefined,
     botCanAccess: access.botCanAccess,
     botIsAdmin: access.botIsAdmin,
     accessStatus: access.accessStatus,
@@ -326,6 +327,25 @@ function mapPhoto(photo: TelegramBot.ChatPhoto | undefined): ChannelPhoto | unde
     bigFileId: photo.big_file_id,
     bigFileUniqueId: photo.big_file_unique_id,
   };
+}
+
+function ensurePhotoUrl<T extends StoredChannel>(channel: T): T {
+  if (!channel.photo) {
+    const { photoUrl: _photoUrl, ...withoutPhotoUrl } = channel;
+    return withoutPhotoUrl as T;
+  }
+
+  return {
+    ...channel,
+    photoUrl: buildPhotoUrl(channel.id || channel.telegramChatId),
+  };
+}
+
+function buildPhotoUrl(channelId: string): string {
+  const path = `/api/channels/${encodeURIComponent(channelId)}/photo`;
+  const baseUrl = env.publicAppUrl.replace(/\/+$/, '');
+
+  return baseUrl ? `${baseUrl}${path}` : path;
 }
 
 function dedupeChannels(channels: StoredChannel[]): StoredChannel[] {

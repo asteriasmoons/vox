@@ -272,7 +272,6 @@ function renderSelectedChannel(channels: Channel[], channelId: string, detail: E
   }
 
   detail.innerHTML = `
-    <div class="selected-channel-kicker">Selected channel</div>
     ${channelCard(selected)}
   `;
 }

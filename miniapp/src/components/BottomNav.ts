@@ -4,14 +4,14 @@ const mainItems: Array<{ page: PageName; label: string; icon: string }> = [
   { page: 'dashboard', label: 'Home', icon: '/icons/home-2-remix.svg' },
   { page: 'channels', label: 'Channels', icon: '/icons/slack-circle.svg' },
   { page: 'drafts', label: 'Drafts', icon: '/icons/pencilburst.svg' },
-  { page: 'calendar', label: 'Calendar', icon: '/icons/cog-one-solid.svg' },
-  { page: 'more', label: 'More', icon: '/icons/cog-one-solid.svg' }
+  { page: 'calendar', label: 'Calendar', icon: '/icons/ringstarcal.svg' },
+  { page: 'more', label: 'More', icon: '/icons/dots-waves-solid.svg' }
 ];
 
 const moreItems: Array<{ page: PageName; label: string; icon: string }> = [
-  { page: 'analytics', label: 'Analytics', icon: '/icons/cog-one-solid.svg' },
-  { page: 'templates', label: 'Templates', icon: '/icons/pencilburst.svg' },
-  { page: 'settings', label: 'Settings', icon: '/icons/cog-one-solid.svg' }
+  { page: 'analytics', label: 'Analytics', icon: '/icons/starbars.svg' },
+  { page: 'templates', label: 'Templates', icon: '/icons/pointpencil.svg' },
+  { page: 'settings', label: 'Settings', icon: '/icons/settingsknobs.svg' }
 ];
 
 export function BottomNav(active: PageName): string {

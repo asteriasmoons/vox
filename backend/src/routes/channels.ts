@@ -47,6 +47,7 @@ channelsRouter.get('/:id/photo', async (request, response, next) => {
     }
 
     const stream = getTelegramClient().getFileStream(fileId);
+    response.type('jpg');
     response.setHeader('Cache-Control', 'private, max-age=3600');
     stream.on('error', next);
     stream.pipe(response);

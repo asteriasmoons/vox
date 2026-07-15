@@ -7,11 +7,28 @@ const CATEGORIES = [
   'maintenance', 'giveaway', 'contest', 'news', 'beta', 'reminder', 'custom',
 ];
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function plainTemplatePreview(text: string): string {
+  return text
+    .replace(/<\/?[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function templateCard(template: Template): string {
   const starClass = template.isFavorite ? 'star-btn active' : 'star-btn';
-  const preview = template.text.length > 100
-    ? template.text.slice(0, 100) + '...'
-    : template.text;
+  const plainPreview = plainTemplatePreview(template.text);
+  const preview = plainPreview.length > 100
+    ? `${plainPreview.slice(0, 100)}...`
+    : plainPreview;
   const builtInBadge = template.isBuiltIn
     ? '<span class="tpl-built-in">Built-in</span>'
     : '';
@@ -24,11 +41,11 @@ export function templateCard(template: Template): string {
   return `
     <div class="tpl-card" data-template-id="${template.id}">
       <div class="tpl-header">
-        <span class="category-badge ${catClass}">${template.category}</span>
+        <span class="category-badge ${catClass}">${escapeHtml(template.category)}</span>
         ${builtInBadge}
       </div>
-      <strong class="tpl-name">${template.name}</strong>
-      <p class="tpl-preview">${preview}</p>
+      <strong class="tpl-name">${escapeHtml(template.name)}</strong>
+      <p class="tpl-preview">${escapeHtml(preview)}</p>
       <div class="tpl-footer">
         <button class="${starClass}" data-favorite-template="${template.id}">&#9733;</button>
         <div class="tpl-actions">
