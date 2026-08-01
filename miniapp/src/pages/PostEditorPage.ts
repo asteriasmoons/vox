@@ -37,6 +37,8 @@ export function createPayload(state: EditorState, status: PostPayload['status'])
 }
 
 export function PostEditorPage(state: EditorState): string {
+  const selectedChannel = state.channels.find((channel) => channel.id === state.channelId);
+
   return `
     <button class="back-button" data-page="dashboard" type="button" aria-label="Back to home">
       <span aria-hidden="true">←</span>
@@ -75,7 +77,7 @@ export function PostEditorPage(state: EditorState): string {
             <p>Exactly how your message will look in Telegram.</p>
           </div>
         </div>
-        <div id="preview-root">${PostPreview(state.text, state.buttons, state.title)}</div>
+        <div id="preview-root">${PostPreview(state.text, state.buttons, { channelName: selectedChannel?.name })}</div>
       `, 'preview-card')}
 
       <div class="editor-actions">

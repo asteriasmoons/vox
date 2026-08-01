@@ -1,5 +1,9 @@
 import type { InlineButtonRows } from '../types/post';
 
+interface PostPreviewOptions {
+  channelName?: string;
+}
+
 /**
  * Renders an HTML string that looks like a real Telegram message.
  *
@@ -8,29 +12,27 @@ import type { InlineButtonRows } from '../types/post';
  * We inject it directly so the browser renders the tags, then CSS
  * makes each tag look exactly the way Telegram does.
  */
-export function PostPreview(text: string, buttons: InlineButtonRows, title?: string): string {
+export function PostPreview(text: string, buttons: InlineButtonRows, options: PostPreviewOptions = {}): string {
   const hasText = text.trim().length > 0;
   const hasButtons = buttons.some((row) => row.some((b) => b.text.trim()));
+  const channelName = options.channelName?.trim() || 'Vox Testing';
 
   const placeholder = '<span class="tg-placeholder">Your message preview will appear here…</span>';
-
-  const titleHtml = title?.trim()
-    ? `<strong class="tg-msg-title">${escapeHtml(title.trim())}</strong>\n`
-    : '';
-
-  const bodyHtml = hasText ? titleHtml + text : (title?.trim() ? titleHtml : placeholder);
+  const bodyHtml = hasText ? normalizeTelegramText(text) : placeholder;
 
   return `
     <div class="tg-preview">
       <div class="tg-chat-bg">
         <div class="tg-message-group">
           <div class="tg-bubble">
+            <div class="tg-channel-name">${escapeHtml(channelName)}</div>
             <div class="tg-bubble-content">${bodyHtml}</div>
             <span class="tg-meta">
-              <span class="tg-time">${currentTime()}</span>
-              <svg class="tg-check" viewBox="0 0 16 11" width="16" height="11">
-                <path d="M11.07.66l-5.4 5.4L3.41 3.8l-1.2 1.2 3.46 3.48 6.6-6.6z" fill="currentColor"/>
+              <svg class="tg-eye" viewBox="0 0 20 14" width="15" height="11" aria-hidden="true">
+                <path d="M10 0C5.7 0 2.1 2.55.5 7c1.6 4.45 5.2 7 9.5 7s7.9-2.55 9.5-7C17.9 2.55 14.3 0 10 0Zm0 11.4A4.4 4.4 0 1 1 10 2.6a4.4 4.4 0 0 1 0 8.8Zm0-1.9A2.5 2.5 0 1 0 10 4.5a2.5 2.5 0 0 0 0 5Z" fill="currentColor"/>
               </svg>
+              <span>1</span>
+              <span class="tg-time">${currentTime()}</span>
             </span>
           </div>
           ${hasButtons ? renderKeyboard(buttons) : ''}
@@ -71,6 +73,13 @@ function currentTime(): string {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
   return `${hours}:${minutes} ${ampm}`;
+}
+
+function normalizeTelegramText(text: string): string {
+  return text
+    .trim()
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n');
 }
 
 function escapeHtml(str: string): string {

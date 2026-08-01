@@ -5,6 +5,10 @@ const API_BASE_URL = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
 function resolveApiBaseUrl(configuredUrl: string | undefined): string {
   const appHost = typeof window === 'undefined' ? '' : window.location.hostname;
 
+  if (appHost === 'localhost' || appHost === '127.0.0.1') {
+    return '';
+  }
+
   if (appHost === 'app.voxiverse.ink') {
     return 'https://api.voxiverse.ink';
   }

@@ -792,11 +792,7 @@
 }
 
 .tpl-modal-body {
-  font-size: 0.92rem;
-  line-height: 1.55;
-  color: rgba(247, 237, 255, 0.72);
-  white-space: pre-wrap;
-  word-break: break-word;
+  min-width: 0;
 }
 
 .tpl-modal-actions {

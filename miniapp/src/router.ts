@@ -7,6 +7,7 @@ import { AnalyticsPage, renderBarChart, renderHeatmap } from './pages/AnalyticsP
 import { TemplatesPage, templateCard } from './pages/TemplatesPage';
 import { initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { PostPreview } from './components/PostPreview';
 import { api } from './utils/api';
 import { insertAtCursor, wrapSelection } from './utils/formatting';
 import { qs } from './utils/dom';
@@ -718,7 +719,8 @@ function openTemplatePreview(template: Template): void {
   if (!modal || !title || !body) return;
 
   title.textContent = template.name;
-  body.textContent = template.text;
+  body.innerHTML = PostPreview(template.text, template.buttons);
+  bindSpoilers(body);
   if (useBtn) useBtn.dataset.templateId = template.id;
 
   modal.style.display = 'flex';
@@ -810,6 +812,7 @@ function bindEditor(): void {
   channelSelect.addEventListener('change', () => {
     state.editor.channelId = channelSelect.value;
     renderEditorChannelPreview();
+    refreshPreview();
   });
   textarea.addEventListener('input', () => {
     state.editor.text = textarea.value;
@@ -901,6 +904,7 @@ async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<
     ].join('');
     channelSelect.value = state.editor.channelId;
     renderEditorChannelPreview();
+    refreshPreview();
   } catch (error) {
     console.warn(error);
     channelSelect.disabled = true;
@@ -1182,10 +1186,9 @@ function refreshPreview(): void {
   const root = document.querySelector('#preview-root');
   if (!root) return;
 
-  import('./components/PostPreview').then(({ PostPreview }) => {
-    root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, state.editor.title);
-    bindSpoilers(root);
-  });
+  const selectedChannel = getSelectedEditorChannel();
+  root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, { channelName: selectedChannel?.name });
+  bindSpoilers(root);
 }
 
 function bindSpoilers(container: Element): void {
