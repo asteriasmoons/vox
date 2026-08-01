@@ -37,9 +37,6 @@ export function PostPreview(text: string, buttons: InlineButtonRows, options: Po
             <div class="tgme_widget_message_footer compact js-message_footer">
               <div class="tgme_widget_message_info short js-message_info">
                 <span class="tgme_widget_message_views">1</span>
-                <span class="tgme_widget_message_meta">
-                  <time class="time">${currentTime()}</time>
-                </span>
               </div>
             </div>
           </div>
@@ -54,12 +51,16 @@ function renderKeyboard(buttons: InlineButtonRows): string {
   const rows = buttons
     .map((row) => row.filter((b) => b.text.trim()))
     .filter((row) => row.length > 0);
+  const previewRows = rows.flatMap((row) => {
+    const shouldStack = row.length > 1 && row.some((button) => button.text.trim().length > 14);
+    return shouldStack ? row.map((button) => [button]) : [row];
+  });
 
-  if (rows.length === 0) return '';
+  if (previewRows.length === 0) return '';
 
   return `
     <div class="tg-keyboard">
-      ${rows
+      ${previewRows
         .map(
           (row) => `
           <div class="tgme_widget_message_inline_row">
@@ -73,14 +74,6 @@ function renderKeyboard(buttons: InlineButtonRows): string {
         .join('')}
     </div>
   `;
-}
-
-function currentTime(): string {
-  const now = new Date();
-  const hours = now.getHours() % 12 || 12;
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
-  return `${hours}:${minutes} ${ampm}`;
 }
 
 function normalizeTelegramText(text: string): string {
