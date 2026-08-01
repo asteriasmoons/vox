@@ -22,6 +22,7 @@ const allowedOrigins = new Set([
   'http://localhost:5173',
   'https://app.voxiverse.ink',
   'https://app.vox.com.im',
+  'null',
 ].filter(Boolean));
 
 app.use(cors({
