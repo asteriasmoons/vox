@@ -1,6 +1,20 @@
 import type { AnalyticsSnapshot, BulkAction, Channel, Draft, PostPayload, PublishResponse, Template } from '../types/post';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE_URL = resolveApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
+
+function resolveApiBaseUrl(configuredUrl: string | undefined): string {
+  const appHost = typeof window === 'undefined' ? '' : window.location.hostname;
+
+  if (appHost === 'app.voxiverse.ink') {
+    return 'https://api.voxiverse.ink';
+  }
+
+  if (configuredUrl === 'https://api.vox.com.im') {
+    return 'https://api.voxiverse.ink';
+  }
+
+  return configuredUrl ?? '';
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
