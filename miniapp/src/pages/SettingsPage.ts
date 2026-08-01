@@ -8,7 +8,7 @@ export function SettingsPage(): string {
       ${GlassCard(`
         <h2>Backend URL</h2>
         <p class="muted">Production sends API requests to the Vox backend domain.</p>
-        <code class="code-pill">https://api.vox.com.im</code>
+        <code class="code-pill">https://api.voxiverse.ink</code>
       `)}
       ${GlassCard(`
         <h2>Telegram Mini App</h2>

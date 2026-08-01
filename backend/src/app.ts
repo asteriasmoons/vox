@@ -17,7 +17,23 @@ const miniappDistPath = path.resolve(__dirname, '../../miniapp/dist');
 
 export const app = express();
 
-app.use(cors({ origin: env.miniappOrigin === '*' ? true : env.miniappOrigin }));
+const allowedOrigins = new Set([
+  env.miniappOrigin,
+  'http://localhost:5173',
+  'https://app.voxiverse.ink',
+  'https://app.vox.com.im',
+].filter(Boolean));
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || env.miniappOrigin === '*' || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`Origin ${origin} is not allowed by CORS`));
+  },
+}));
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/health', (_request, response) => {
