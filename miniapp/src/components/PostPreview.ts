@@ -21,19 +21,27 @@ export function PostPreview(text: string, buttons: InlineButtonRows, options: Po
   const bodyHtml = hasText ? normalizeTelegramText(text) : placeholder;
 
   return `
-    <div class="tg-preview">
-      <div class="tg-chat-bg">
-        <div class="tg-message-group">
-          <div class="tg-bubble">
-            <div class="tg-channel-name">${escapeHtml(channelName)}</div>
-            <div class="tg-bubble-content">${bodyHtml}</div>
-            <span class="tg-meta">
-              <svg class="tg-eye" viewBox="0 0 20 14" width="15" height="11" aria-hidden="true">
-                <path d="M10 0C5.7 0 2.1 2.55.5 7c1.6 4.45 5.2 7 9.5 7s7.9-2.55 9.5-7C17.9 2.55 14.3 0 10 0Zm0 11.4A4.4 4.4 0 1 1 10 2.6a4.4 4.4 0 0 1 0 8.8Zm0-1.9A2.5 2.5 0 1 0 10 4.5a2.5 2.5 0 0 0 0 5Z" fill="currentColor"/>
+    <div class="tg-preview widget_frame_base theme_dark tme_mode">
+      <div class="tgme_widget_message_wrap no_userpic">
+        <div class="tgme_widget_message">
+          <div class="tgme_widget_message_bubble">
+            <i class="tgme_widget_message_bubble_tail" aria-hidden="true">
+              <svg class="bubble_icon" width="9" height="20" viewBox="0 0 9 20">
+                <path class="background" d="M9 0v20c-1.89-2.58-3.33-5.31-4.33-8.2C3.67 8.91 2.11 6.98 0 6c2.66 0 4.66-2 6-6h3Z"/>
               </svg>
-              <span>1</span>
-              <span class="tg-time">${currentTime()}</span>
-            </span>
+            </i>
+            <div class="tgme_widget_message_author accent_color">
+              <span class="tgme_widget_message_owner_name" dir="auto">${escapeHtml(channelName)}</span>
+            </div>
+            <div class="tgme_widget_message_text js-message_text" dir="auto">${bodyHtml}</div>
+            <div class="tgme_widget_message_footer compact js-message_footer">
+              <div class="tgme_widget_message_info short js-message_info">
+                <span class="tgme_widget_message_views">1</span>
+                <span class="tgme_widget_message_meta">
+                  <time class="time">${currentTime()}</time>
+                </span>
+              </div>
+            </div>
           </div>
           ${hasButtons ? renderKeyboard(buttons) : ''}
         </div>
@@ -54,10 +62,10 @@ function renderKeyboard(buttons: InlineButtonRows): string {
       ${rows
         .map(
           (row) => `
-          <div class="tg-keyboard-row">
+          <div class="tgme_widget_message_inline_row">
             ${row
               .map(
-                (b) => `<a class="tg-keyboard-btn" href="${escapeAttr(b.url || '#')}" target="_blank" rel="noopener noreferrer">${escapeHtml(b.text)}</a>`
+                (b) => `<a class="tgme_widget_message_inline_button url_button" href="${escapeAttr(b.url || '#')}" target="_blank" rel="noopener noreferrer"><span class="tgme_widget_message_inline_button_text" dir="auto">${escapeHtml(b.text)}</span></a>`
               )
               .join('')}
           </div>`
@@ -79,7 +87,8 @@ function normalizeTelegramText(text: string): string {
   return text
     .trim()
     .replace(/\r\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n');
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\n/g, '<br/>');
 }
 
 function escapeHtml(str: string): string {
