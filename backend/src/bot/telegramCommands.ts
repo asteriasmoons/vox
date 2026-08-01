@@ -53,6 +53,23 @@ function formatStartResponse(): string {
   ].join("\n");
 }
 
+function openVoxReplyMarkup(): TelegramBot.SendMessageOptions["reply_markup"] | undefined {
+  if (!env.miniappOrigin) {
+    return undefined;
+  }
+
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: "Open Vox",
+          web_app: { url: env.miniappOrigin },
+        },
+      ],
+    ],
+  };
+}
+
 function parseCommand(
   text: string | undefined,
   botUsername: string | null,
@@ -88,7 +105,9 @@ async function handleCommand(
   }
 
   if (parsed.command === "start") {
-    await bot.sendMessage(message.chat.id, formatStartResponse());
+    await bot.sendMessage(message.chat.id, formatStartResponse(), {
+      reply_markup: openVoxReplyMarkup(),
+    });
     return;
   }
 
@@ -173,6 +192,16 @@ export async function registerTelegramCommands(): Promise<void> {
   await Promise.all(
     COMMAND_SCOPES.map((scope) => bot.setMyCommands(COMMANDS, { scope })),
   );
+
+  if (env.miniappOrigin) {
+    await bot.setChatMenuButton({
+      menu_button: {
+        type: "web_app",
+        text: "Open Vox",
+        web_app: { url: env.miniappOrigin },
+      },
+    });
+  }
 
   bot.on("message", (message) => {
     void handleCommand(bot, message, botUsername);
