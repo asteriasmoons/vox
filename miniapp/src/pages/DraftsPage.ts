@@ -23,7 +23,7 @@ export function draftCard(draft: Draft, channels: Channel[]): string {
   const preview = draft.text.length > 60 ? draft.text.slice(0, 60) + '...' : draft.text;
 
   return `
-    <div class="draft-card" data-draft-id="${draft.id}">
+    <div class="draft-card" data-draft-id="${draft.id}" role="button" tabindex="0">
       <input type="checkbox" class="draft-checkbox" />
       <button class="${starClass}" data-favorite-draft="${draft.id}">&#9733;</button>
       <div class="draft-body">

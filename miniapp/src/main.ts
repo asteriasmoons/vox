@@ -5,8 +5,9 @@ import './styles/editor.css';
 import './styles/features.css';
 import './styles/telegram-preview.css';
 import { render } from './router';
+import { initKeyboardDismissal } from './utils/keyboard';
 import { initTelegramMiniApp } from './utils/telegram';
 
 initTelegramMiniApp();
+initKeyboardDismissal();
 void render('dashboard');
-

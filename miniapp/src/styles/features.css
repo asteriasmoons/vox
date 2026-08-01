@@ -79,6 +79,12 @@
   grid-template-columns: auto auto 1fr;
   align-items: start;
   gap: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.draft-card:active {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .draft-body {

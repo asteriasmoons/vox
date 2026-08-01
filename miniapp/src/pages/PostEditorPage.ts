@@ -6,6 +6,7 @@ import { RichTextToolbar } from '../components/RichTextToolbar';
 import type { Channel, InlineButtonRows, PostPayload } from '../types/post';
 
 export interface EditorState {
+  draftId?: string;
   title: string;
   channelId: string;
   text: string;

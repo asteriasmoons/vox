@@ -403,9 +403,26 @@ function renderDraftList(drafts: Draft[], channels: Channel[], container: Elemen
 function bindDraftActions(container: Element, allDrafts: Draft[], allChannels: Channel[], bulkBar: HTMLElement | null): void {
   container.querySelectorAll<HTMLElement>('.draft-card').forEach((card) => {
     const draftId = card.dataset.draftId!;
+    const draft = allDrafts.find((d) => d.id === draftId);
 
-    card.querySelector('[data-favorite-draft]')?.addEventListener('click', async () => {
-      const draft = allDrafts.find((d) => d.id === draftId);
+    card.addEventListener('click', (event) => {
+      if (!draft || isDraftControl(event.target)) {
+        return;
+      }
+
+      loadDraftIntoEditor(draft, allChannels);
+    });
+    card.addEventListener('keydown', (event) => {
+      if (!draft || isDraftControl(event.target) || (event.key !== 'Enter' && event.key !== ' ')) {
+        return;
+      }
+
+      event.preventDefault();
+      loadDraftIntoEditor(draft, allChannels);
+    });
+
+    card.querySelector('[data-favorite-draft]')?.addEventListener('click', async (event) => {
+      event.stopPropagation();
       if (!draft) return;
       try {
         await api.updateDraft(draftId, { isFavorite: !draft.isFavorite });
@@ -417,6 +434,9 @@ function bindDraftActions(container: Element, allDrafts: Draft[], allChannels: C
 
     const checkbox = card.querySelector<HTMLInputElement>('.draft-checkbox');
     if (checkbox && bulkBar) {
+      checkbox.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
       checkbox.addEventListener('change', () => {
         const checked = getCheckedDraftIds();
         if (checked.length > 0) {
@@ -427,6 +447,25 @@ function bindDraftActions(container: Element, allDrafts: Draft[], allChannels: C
       });
     }
   });
+}
+
+function loadDraftIntoEditor(draft: Draft, channels: Channel[]): void {
+  state.editor = {
+    draftId: draft.id,
+    title: draft.title,
+    channelId: draft.channelId,
+    text: draft.text,
+    buttons: draft.buttons.length > 0
+      ? draft.buttons.map((row) => row.map((button) => ({ ...button })))
+      : [[{ text: '', url: '' }]],
+    channels
+  };
+
+  void render('editor');
+}
+
+function isDraftControl(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest('button, input, label, a'));
 }
 
 function getCheckedDraftIds(): string[] {
@@ -700,6 +739,7 @@ async function hydrateTemplates(): Promise<void> {
       const template = allTemplates.find(t => t.id === templateId);
       if (!template) return;
       closeModal();
+      state.editor.draftId = undefined;
       state.editor.title = template.name;
       state.editor.text = template.text;
       state.editor.buttons = template.buttons.length > 0
@@ -753,6 +793,7 @@ function bindTemplateActions(container: Element, allTemplates: Template[]): void
     });
 
     card.querySelector('[data-template-action="use"]')?.addEventListener('click', () => {
+      state.editor.draftId = undefined;
       state.editor.title = template.name;
       state.editor.text = template.text;
       state.editor.buttons = template.buttons.length > 0 ? template.buttons.map((row) => row.map((b) => ({ ...b }))) : [[{ text: '', url: '' }]];
@@ -842,8 +883,13 @@ function bindEditor(): void {
     }
 
     try {
-      await api.saveDraft(createPayload('draft'));
-      alert('Draft saved.');
+      const payload = createPayload('draft');
+      const savedDraft = state.editor.draftId
+        ? await api.updateDraft(state.editor.draftId, payload)
+        : await api.saveDraft(payload);
+      state.editor.draftId = savedDraft.id;
+      resetEditorState();
+      void render('dashboard');
     } catch (error) {
       console.warn(error);
       alert('Draft could not be saved right now.');
@@ -860,7 +906,8 @@ function bindEditor(): void {
 
     try {
       await api.publishPost(createPayload('posted'));
-      alert('Published to Telegram.');
+      resetEditorState();
+      void render('dashboard');
     } catch (error) {
       console.warn(error);
       alert('Post could not be published right now.');
@@ -868,6 +915,10 @@ function bindEditor(): void {
   });
 
   bindScheduleSheet(titleInput, channelSelect, textarea);
+}
+
+function resetEditorState(): void {
+  state.editor = { ...initialEditorState };
 }
 
 async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<void> {
