@@ -18,7 +18,7 @@
 }
 
 .tg-preview .tgme_widget_message {
-  width: min(86%, 430px);
+  width: min(92%, 430px);
 }
 
 .tg-preview .tgme_widget_message_bubble {
@@ -26,22 +26,16 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 430px;
-  padding: 8px 9px 5px;
+  padding: 9px 11px 6px;
   border: 0;
-  border-radius: 0 15px 15px 15px;
+  border-radius: 17px 17px 17px 7px;
   background: var(--tg-preview-bubble);
   color: var(--tg-preview-text);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
 }
 
 .tg-preview .tgme_widget_message_bubble_tail {
-  pointer-events: none;
-  position: absolute;
-  left: -8px;
-  top: 0;
-  width: 9px;
-  height: 20px;
-  overflow: hidden;
+  display: none;
 }
 
 .tg-preview .tgme_widget_message_bubble_tail .background {
@@ -168,7 +162,7 @@
 
 .tg-preview .tg-keyboard,
 .tg-preview .tgme_widget_message_inline_keyboard {
-  width: min(86%, 430px);
+  width: 100%;
   max-width: 100%;
   margin-top: 2px;
 }
@@ -186,12 +180,12 @@
   display: block;
   flex: 1 1 0;
   min-width: 0;
-  min-height: 42px;
-  padding: 10px 8px;
+  min-height: 44px;
+  padding: 10px 12px;
   border-radius: 0;
   background: var(--tg-preview-button);
   color: #fff;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 22px;
   text-align: center;
