@@ -1,37 +1,29 @@
 /* ── Telegram Message Preview ── */
 
 .tg-preview {
-  border-radius: 18px;
-  overflow: hidden;
-  background:
-    linear-gradient(90deg, transparent 0 33%, rgba(0, 174, 255, 0.48) 33% 47%, transparent 47% 66%, rgba(128, 0, 254, 0.5) 66% 80%, transparent 80%),
-    linear-gradient(0deg, transparent 0 36%, rgba(0, 174, 255, 0.42) 36% 50%, transparent 50% 69%, rgba(128, 0, 254, 0.46) 69% 83%, transparent 83%),
-    #050507;
-  background-size: 128px 128px;
+  overflow: visible;
 }
 
 .tg-chat-bg {
-  padding: 12px 0;
+  padding: 0;
   background: transparent;
 }
 
 .tg-message-group {
-  width: fit-content;
-  max-width: min(88%, 520px);
+  width: 100%;
+  max-width: 100%;
   display: grid;
   gap: 2px;
   justify-items: stretch;
-  margin-right: auto;
 }
 
 /* ── Bubble ── */
 
 .tg-bubble {
   position: relative;
-  width: fit-content;
-  max-width: 100%;
+  width: 100%;
   padding: 8px 10px 6px;
-  border-radius: 0 18px 18px 8px;
+  border-radius: 18px 18px 18px 8px;
   background: #1b1d24;
   color: #f5f5f7;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
@@ -184,7 +176,7 @@
   gap: 6px;
   min-height: 38px;
   padding: 5px 9px;
-  border-radius: 8px;
+  border-radius: 0;
   background: #071758;
   color: #f7f8ff;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
@@ -196,6 +188,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: background 0.15s ease;
+}
+
+.tg-keyboard-row:first-child .tg-keyboard-btn:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+.tg-keyboard-row:first-child .tg-keyboard-btn:last-child {
+  border-bottom-right-radius: 10px;
 }
 
 .tg-keyboard-btn:active {
