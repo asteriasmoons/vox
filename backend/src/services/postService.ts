@@ -177,6 +177,8 @@ export function normalizePostPayload(payload: Partial<PostPayload>): PostPayload
     buttons: payload.buttons ?? [],
     status: payload.status ?? 'draft',
     createdAt: payload.createdAt ?? now,
-    updatedAt: now
+    updatedAt: now,
+    mode: payload.mode ?? 'regular',
+    rich: payload.rich
   };
 }

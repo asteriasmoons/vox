@@ -5,13 +5,35 @@ import { DraftsPage, draftCard } from './pages/DraftsPage';
 import { CalendarPage, renderMonthGrid, renderWeekGrid, renderDayView, renderAgendaView } from './pages/CalendarPage';
 import { AnalyticsPage, renderBarChart, renderHeatmap } from './pages/AnalyticsPage';
 import { TemplatesPage, templateCard } from './pages/TemplatesPage';
-import { initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
+import { buildRichMessage, createPayload as buildPayload, initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PostPreview } from './components/PostPreview';
+import { INLINE_BUTTON_PAYLOAD_FIELDS } from './components/ButtonBuilder';
+import { RICH_BUTTON_PAYLOAD_FIELDS } from './components/RichButtonBuilder';
+import { emptyCell, makeBlock, walkPath } from './components/RichBlockBuilder';
 import { api } from './utils/api';
 import { insertAtCursor, wrapSelection } from './utils/formatting';
 import { qs } from './utils/dom';
-import type { Channel, Draft, InlineButtonRows, PostPayload, RepeatMode, Template } from './types/post';
+import type {
+  Channel,
+  Draft,
+  InlineButton,
+  InlineButtonKind,
+  InlineButtonRows,
+  InputMedia,
+  PostMode,
+  PostPayload,
+  RepeatMode,
+  RichBlock,
+  RichBlockCaption,
+  RichBlockTableCell,
+  RichButtonStyle,
+  RichFlavor,
+  RichListItem,
+  RichMediaRef,
+  RichMessageButton,
+  Template
+} from './types/post';
 
 // ─── Types and State ───────────────────────────────────────────────────────────
 
@@ -450,15 +472,24 @@ function bindDraftActions(container: Element, allDrafts: Draft[], allChannels: C
 }
 
 function loadDraftIntoEditor(draft: Draft, channels: Channel[]): void {
+  const rich = draft.rich;
   state.editor = {
     draftId: draft.id,
     title: draft.title,
     channelId: draft.channelId,
     text: draft.text,
     buttons: draft.buttons.length > 0
-      ? draft.buttons.map((row) => row.map((button) => ({ ...button })))
-      : [[{ text: '', url: '' }]],
-    channels
+      ? draft.buttons.map((row) => row.map((button) => ({ kind: 'url' as InlineButtonKind, ...button })))
+      : [[newInlineButton()]],
+    channels,
+    mode: draft.mode ?? 'regular',
+    richFlavor: rich?.flavor ?? 'html',
+    richHtml: rich?.html ?? '',
+    richMarkdown: rich?.markdown ?? '',
+    richBlocks: rich?.blocks ? JSON.parse(JSON.stringify(rich.blocks)) as RichBlock[] : [],
+    richMedia: rich?.media ? JSON.parse(JSON.stringify(rich.media)) as RichMediaRef[] : [],
+    richIsRtl: Boolean(rich?.isRtl),
+    richSkipEntityDetection: Boolean(rich?.skipEntityDetection)
   };
 
   void render('editor');
@@ -837,14 +868,15 @@ function bindTemplateActions(container: Element, allTemplates: Template[]): void
   });
 }
 
-// ─── Editor Binding (All Existing Code) ────────────────────────────────────────
+// ─── Editor Binding (Regular + Rich Message) ───────────────────────────────────
 
 function bindEditor(): void {
   const titleInput = qs<HTMLInputElement>('#post-title');
   const channelSelect = qs<HTMLSelectElement>('#channel-id');
-  const textarea = qs<HTMLTextAreaElement>('#post-text');
+  // Regular-mode textarea only exists when state.editor.mode === 'regular'.
+  const textarea = document.getElementById('post-text') as HTMLTextAreaElement | null;
 
-  textarea.value = state.editor.text;
+  if (textarea) textarea.value = state.editor.text;
 
   titleInput.addEventListener('input', () => {
     state.editor.title = titleInput.value;
@@ -855,19 +887,29 @@ function bindEditor(): void {
     renderEditorChannelPreview();
     refreshPreview();
   });
-  textarea.addEventListener('input', () => {
-    state.editor.text = textarea.value;
-    refreshPreview();
-  });
 
-  document.querySelectorAll<HTMLButtonElement>('[data-format]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const action = button.dataset.format;
-      state.editor.text = applyFormat(action, textarea);
+  if (textarea) {
+    textarea.addEventListener('input', () => {
+      state.editor.text = textarea.value;
       refreshPreview();
     });
-  });
+    document.querySelectorAll<HTMLButtonElement>('.editor-textarea + * [data-format], [data-format]').forEach((button) => {
+      // Regular-mode toolbar buttons apply HTML wraps to #post-text.
+      if (button.closest('.rich-flavor-body')) return;
+      button.addEventListener('click', () => {
+        const action = button.dataset.format;
+        state.editor.text = applyFormat(action, textarea);
+        refreshPreview();
+      });
+    });
+  }
 
+  bindModeAndFlavor();
+  bindRichHtmlPane();
+  bindRichMarkdownPane();
+  bindRichMediaList();
+  bindRichBlockBuilder();
+  bindRichMessageOptions();
   bindButtonBuilder();
   void hydrateEditorChannels(channelSelect);
 
@@ -917,8 +959,457 @@ function bindEditor(): void {
   bindScheduleSheet(titleInput, channelSelect, textarea);
 }
 
+// ─── Mode + Flavor tabs ────────────────────────────────────────────────────────
+
+function bindModeAndFlavor(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-post-mode]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const nextMode = tab.dataset.postMode as PostMode | undefined;
+      if (!nextMode || nextMode === state.editor.mode) return;
+      state.editor.mode = nextMode;
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-flavor]').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const flavor = tab.dataset.richFlavor as RichFlavor | undefined;
+      if (!flavor || flavor === state.editor.richFlavor) return;
+      state.editor.richFlavor = flavor;
+      void render('editor');
+    });
+  });
+}
+
+// ─── Rich HTML / Markdown panes ────────────────────────────────────────────────
+
+function bindRichHtmlPane(): void {
+  const ta = document.getElementById('rich-html') as HTMLTextAreaElement | null;
+  if (!ta) return;
+  ta.value = state.editor.richHtml;
+  ta.addEventListener('input', () => {
+    state.editor.richHtml = ta.value;
+    refreshPreview();
+  });
+  document.querySelectorAll<HTMLButtonElement>('.rich-flavor-body [data-format]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const action = button.dataset.format;
+      state.editor.richHtml = applyFormat(action, ta);
+      refreshPreview();
+    });
+  });
+}
+
+function bindRichMarkdownPane(): void {
+  const ta = document.getElementById('rich-markdown') as HTMLTextAreaElement | null;
+  if (!ta) return;
+  ta.value = state.editor.richMarkdown;
+  ta.addEventListener('input', () => {
+    state.editor.richMarkdown = ta.value;
+    refreshPreview();
+  });
+}
+
+function bindRichMessageOptions(): void {
+  const rtl = document.getElementById('rich-is-rtl') as HTMLInputElement | null;
+  const skip = document.getElementById('rich-skip-entity-detection') as HTMLInputElement | null;
+  if (rtl) rtl.addEventListener('change', () => { state.editor.richIsRtl = rtl.checked; refreshPreview(); });
+  if (skip) skip.addEventListener('change', () => { state.editor.richSkipEntityDetection = skip.checked; refreshPreview(); });
+}
+
+// ─── Rich media list (html/markdown flavors) ───────────────────────────────────
+
+function bindRichMediaList(): void {
+  const addBtn = document.querySelector<HTMLButtonElement>('[data-rich-media-add]');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      state.editor.richMedia.push({
+        id: `m${state.editor.richMedia.length + 1}`,
+        media: { type: 'photo', media: '' }
+      });
+      void render('editor');
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('.rich-media-item').forEach((item) => {
+    const index = Number(item.dataset.richMediaIndex);
+    const ref = state.editor.richMedia[index];
+    if (!ref) return;
+
+    item.querySelector<HTMLButtonElement>('[data-rich-media-remove]')?.addEventListener('click', () => {
+      state.editor.richMedia.splice(index, 1);
+      void render('editor');
+    });
+
+    item.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-rich-media-field]').forEach((input) => {
+      const field = input.dataset.richMediaField as 'id' | 'media' | 'caption';
+      input.addEventListener('input', () => {
+        if (field === 'id') ref.id = input.value;
+        else if (field === 'media') ref.media.media = input.value;
+        else if (field === 'caption') ref.media.caption = input.value;
+        refreshPreview();
+      });
+    });
+
+    const typeSelect = item.querySelector<HTMLSelectElement>('[data-rich-media-type]');
+    if (typeSelect) {
+      typeSelect.addEventListener('change', () => {
+        const type = typeSelect.value as InputMedia['type'];
+        const previous = ref.media;
+        ref.media = { type, media: previous.media, caption: previous.caption } as InputMedia;
+        void render('editor');
+      });
+    }
+
+    item.querySelectorAll<HTMLInputElement>('[data-rich-media-flag]').forEach((flag) => {
+      const key = flag.dataset.richMediaFlag as 'hasSpoiler' | 'showCaptionAboveMedia';
+      flag.addEventListener('change', () => {
+        (ref.media as unknown as Record<string, unknown>)[key] = flag.checked;
+        refreshPreview();
+      });
+    });
+  });
+}
+
+// ─── Rich block builder ───────────────────────────────────────────────────────
+
+function bindRichBlockBuilder(): void {
+  // Add-block buttons (present in root + every nested scope).
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-block-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const scope = btn.dataset.richBlockAdd || 'root';
+      const typeSelect = document.querySelector<HTMLSelectElement>(`[data-rich-block-add-type="${scope}"]`);
+      const type = (typeSelect?.value as RichBlock['type']) || 'paragraph';
+      appendBlockAtScope(scope, makeBlock(type));
+      void render('editor');
+    });
+  });
+
+  // Move / remove buttons on each block item.
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-block-move]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const path = btn.dataset.richBlockPath || '';
+      const direction = Number(btn.dataset.richBlockMove);
+      moveBlockAtPath(path, direction);
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-block-remove]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      removeBlockAtPath(btn.dataset.richBlockPath || '');
+      void render('editor');
+    });
+  });
+
+  // Simple scalar fields on each block.
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('[data-rich-block-field]').forEach((input) => {
+    const path = input.getAttribute('data-rich-block-path') || '';
+    const field = input.dataset.richBlockField as string;
+    const evt = input instanceof HTMLSelectElement || (input as HTMLInputElement).type === 'checkbox' || (input as HTMLInputElement).type === 'number' ? 'change' : 'input';
+    input.addEventListener(evt, () => {
+      const block = getBlockAtPath(path);
+      if (!block) return;
+      applyScalarField(block, field, input);
+      refreshPreview();
+    });
+  });
+
+  // Block captions (photo/video/animation/audio/document/voice_note/collage/slideshow/map).
+  document.querySelectorAll<HTMLInputElement>('[data-rich-block-caption-field]').forEach((input) => {
+    const path = input.getAttribute('data-rich-block-path') || '';
+    const field = input.dataset.richBlockCaptionField as 'text' | 'credit';
+    input.addEventListener('input', () => {
+      const block = getBlockAtPath(path) as unknown as { caption?: RichBlockCaption };
+      if (!block) return;
+      const caption: RichBlockCaption = block.caption ?? { text: '' };
+      caption[field] = input.value;
+      block.caption = caption;
+      refreshPreview();
+    });
+  });
+
+  // Inline media fields on media blocks (photo/video/etc).
+  document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-rich-media-inline-field]').forEach((input) => {
+    const path = input.getAttribute('data-rich-block-path') || '';
+    const field = input.dataset.richMediaInlineField as string;
+    const evt = (input as HTMLInputElement).type === 'checkbox' || (input as HTMLInputElement).type === 'number' ? 'change' : 'input';
+    input.addEventListener(evt, () => {
+      const block = getBlockAtPath(path);
+      if (!block) return;
+      const media = mediaOnBlock(block);
+      if (!media) return;
+      applyInputMediaField(media, field, input);
+      refreshPreview();
+    });
+  });
+
+  // List item handlers.
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-list-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const path = btn.dataset.richListAdd || '';
+      const block = getBlockAtPath(path);
+      if (!block || block.type !== 'list') return;
+      block.items.push({ blocks: [{ type: 'paragraph', text: '' }] });
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLElement>('[data-rich-list-item]').forEach((item) => {
+    const path = item.dataset.richBlockPath || '';
+    const listItem = getListItemAtPath(path);
+    if (!listItem) return;
+
+    item.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-rich-list-item-field]').forEach((input) => {
+      const field = input.dataset.richListItemField as 'hasCheckbox' | 'isChecked' | 'value' | 'labelType';
+      const evt = (input as HTMLInputElement).type === 'checkbox' || (input as HTMLInputElement).type === 'number' || input instanceof HTMLSelectElement ? 'change' : 'input';
+      input.addEventListener(evt, () => applyListItemField(listItem, field, input));
+    });
+
+    item.querySelector<HTMLButtonElement>('[data-rich-list-remove]')?.addEventListener('click', () => {
+      removeListItemAtPath(path);
+      void render('editor');
+    });
+    item.querySelectorAll<HTMLButtonElement>('[data-rich-list-move]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        moveListItemAtPath(path, Number(btn.dataset.richListMove));
+        void render('editor');
+      });
+    });
+  });
+
+  // Table cell handlers.
+  document.querySelectorAll<HTMLElement>('[data-rich-table-cell]').forEach((cellEl) => {
+    const path = cellEl.dataset.richBlockPath || '';
+    const row = Number(cellEl.dataset.richTableRow);
+    const col = Number(cellEl.dataset.richTableCol);
+    const block = getBlockAtPath(path);
+    if (!block || block.type !== 'table') return;
+    const cell = block.cells[row]?.[col];
+    if (!cell) return;
+    cellEl.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-rich-cell-field]').forEach((input) => {
+      const field = input.dataset.richCellField as keyof RichBlockTableCell;
+      const evt = (input as HTMLInputElement).type === 'checkbox' || (input as HTMLInputElement).type === 'number' || input instanceof HTMLSelectElement ? 'change' : 'input';
+      input.addEventListener(evt, () => applyCellField(cell, field, input));
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-table-row-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = getBlockAtPath(btn.dataset.richBlockPath || '');
+      if (!block || block.type !== 'table') return;
+      const cols = Math.max(1, ...block.cells.map((r) => r.length));
+      block.cells.push(Array.from({ length: cols }, () => emptyCell()));
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-table-col-add]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = getBlockAtPath(btn.dataset.richBlockPath || '');
+      if (!block || block.type !== 'table') return;
+      block.cells.forEach((r) => r.push(emptyCell()));
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-table-col-remove]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const block = getBlockAtPath(btn.dataset.richBlockPath || '');
+      if (!block || block.type !== 'table') return;
+      block.cells.forEach((r) => { if (r.length > 1) r.pop(); });
+      void render('editor');
+    });
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-rich-table-row-remove]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const path = btn.dataset.richBlockPath || '';
+      const block = getBlockAtPath(path);
+      if (!block || block.type !== 'table') return;
+      const row = Number(btn.dataset.richTableRowRemove);
+      if (block.cells.length > 1) block.cells.splice(row, 1);
+      void render('editor');
+    });
+  });
+
+  // Rich buttons (inside InputRichBlockButtons blocks).
+  document.querySelectorAll<HTMLElement>('[data-rich-buttons-scope]').forEach((scope) => {
+    const path = scope.dataset.richButtonsScope || '';
+    const block = getBlockAtPath(path);
+    if (!block || block.type !== 'buttons') return;
+
+    scope.querySelector<HTMLButtonElement>('[data-rich-buttons-add]')?.addEventListener('click', () => {
+      block.buttons.push({ text: '', kind: 'url', url: '' });
+      void render('editor');
+    });
+    const alignSel = scope.querySelector<HTMLSelectElement>('[data-rich-buttons-align]');
+    if (alignSel) alignSel.addEventListener('change', () => { block.align = alignSel.value as 'left' | 'center' | 'right'; refreshPreview(); });
+
+    scope.querySelectorAll<HTMLElement>('[data-rich-button-index]').forEach((row) => {
+      const index = Number(row.dataset.richButtonIndex);
+      const button = block.buttons[index];
+      if (!button) return;
+
+      row.querySelector<HTMLInputElement>('[data-rich-button-field="text"]')?.addEventListener('input', (e) => {
+        button.text = (e.target as HTMLInputElement).value;
+        refreshPreview();
+      });
+      const kindSel = row.querySelector<HTMLSelectElement>('[data-rich-button-kind]');
+      if (kindSel) kindSel.addEventListener('change', () => {
+        button.kind = kindSel.value as RichMessageButton['kind'];
+        clearRichButtonPayloads(button);
+        void render('editor');
+      });
+      const styleSel = row.querySelector<HTMLSelectElement>('[data-rich-button-style]');
+      if (styleSel) styleSel.addEventListener('change', () => {
+        button.style = styleSel.value ? (styleSel.value as RichButtonStyle) : undefined;
+        refreshPreview();
+      });
+      row.querySelector<HTMLInputElement>('[data-rich-button-payload]')?.addEventListener('input', (e) => {
+        const value = (e.target as HTMLInputElement).value;
+        const spec = RICH_BUTTON_PAYLOAD_FIELDS[button.kind];
+        if (spec) (button as unknown as Record<string, unknown>)[spec.field] = value;
+        refreshPreview();
+      });
+      row.querySelector<HTMLButtonElement>('[data-rich-button-remove]')?.addEventListener('click', () => {
+        block.buttons.splice(index, 1);
+        void render('editor');
+      });
+      row.querySelectorAll<HTMLButtonElement>('[data-rich-button-move]').forEach((mv) => {
+        mv.addEventListener('click', () => {
+          const dir = Number(mv.dataset.richButtonMove);
+          const next = index + dir;
+          if (next < 0 || next >= block.buttons.length) return;
+          const [b] = block.buttons.splice(index, 1);
+          block.buttons.splice(next, 0, b);
+          void render('editor');
+        });
+      });
+    });
+  });
+}
+
+// ─── Block-tree helpers ────────────────────────────────────────────────────────
+
+function getBlockAtPath(path: string): RichBlock | null {
+  const loc = walkPath(state.editor.richBlocks, path);
+  if (!loc) return null;
+  return (loc.parent[loc.index] as RichBlock) ?? null;
+}
+
+function getListItemAtPath(path: string): RichListItem | null {
+  const loc = walkPath(state.editor.richBlocks, path);
+  if (!loc) return null;
+  return (loc.parent[loc.index] as RichListItem) ?? null;
+}
+
+function appendBlockAtScope(scope: string, block: RichBlock): void {
+  if (scope === 'root') {
+    state.editor.richBlocks.push(block);
+    return;
+  }
+  const segments = scope.split('/').filter(Boolean);
+  // Scope always ends with a container key ('blocks' or 'items' — but items appends via a different route).
+  let arr: unknown[] = state.editor.richBlocks;
+  for (let i = 0; i < segments.length - 1; i += 2) {
+    const idx = Number(segments[i]);
+    const key = segments[i + 1];
+    const node = arr[idx] as Record<string, unknown>;
+    arr = node[key] as unknown[];
+  }
+  // The scope from RichBlockBuilder ends in "…/blocks" (from renderBlockBuilder(pathPrefix + '/blocks'))
+  // — so the final segment is 'blocks' and arr is now the blocks array.
+  const tail = segments[segments.length - 1];
+  if (tail === 'blocks' || tail === 'items') {
+    (arr as RichBlock[]).push(block);
+  } else {
+    // Fallback (shouldn't happen): scope pointed at an item — append to its blocks.
+    const parent = arr[Number(tail)] as { blocks?: RichBlock[] };
+    if (parent && Array.isArray(parent.blocks)) parent.blocks.push(block);
+  }
+}
+
+function moveBlockAtPath(path: string, direction: number): void {
+  const loc = walkPath(state.editor.richBlocks, path);
+  if (!loc) return;
+  const next = loc.index + direction;
+  if (next < 0 || next >= loc.parent.length) return;
+  const [item] = loc.parent.splice(loc.index, 1);
+  loc.parent.splice(next, 0, item);
+}
+
+function removeBlockAtPath(path: string): void {
+  const loc = walkPath(state.editor.richBlocks, path);
+  if (!loc) return;
+  loc.parent.splice(loc.index, 1);
+}
+
+function moveListItemAtPath(path: string, direction: number): void {
+  moveBlockAtPath(path, direction);
+}
+
+function removeListItemAtPath(path: string): void {
+  removeBlockAtPath(path);
+}
+
+function mediaOnBlock(block: RichBlock): InputMedia | null {
+  switch (block.type) {
+    case 'photo': return block.photo;
+    case 'video': return block.video;
+    case 'animation': return block.animation;
+    case 'audio': return block.audio;
+    case 'document': return block.document;
+    case 'voice_note': return block.voiceNote;
+    default: return null;
+  }
+}
+
+function applyScalarField(block: RichBlock, field: string, input: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): void {
+  const val = (input as HTMLInputElement).type === 'checkbox' ? (input as HTMLInputElement).checked
+    : (input as HTMLInputElement).type === 'number' ? Number((input as HTMLInputElement).value)
+    : (input as HTMLInputElement).value;
+  (block as unknown as Record<string, unknown>)[field] = field === 'size' ? Number(val) as 1 | 2 | 3 | 4 | 5 | 6 : val;
+}
+
+function applyInputMediaField(media: InputMedia, field: string, input: HTMLInputElement | HTMLTextAreaElement): void {
+  const el = input as HTMLInputElement;
+  if (el.type === 'checkbox') (media as unknown as Record<string, unknown>)[field] = el.checked;
+  else if (el.type === 'number') (media as unknown as Record<string, unknown>)[field] = el.value === '' ? undefined : Number(el.value);
+  else (media as unknown as Record<string, unknown>)[field] = el.value;
+}
+
+function applyListItemField(item: RichListItem, field: 'hasCheckbox' | 'isChecked' | 'value' | 'labelType', input: HTMLInputElement | HTMLSelectElement): void {
+  if (field === 'hasCheckbox' || field === 'isChecked') item[field] = (input as HTMLInputElement).checked;
+  else if (field === 'value') item.value = (input as HTMLInputElement).value === '' ? undefined : Number((input as HTMLInputElement).value);
+  else if (field === 'labelType') {
+    const v = (input as HTMLSelectElement).value;
+    item.labelType = v ? (v as RichListItem['labelType']) : undefined;
+  }
+  refreshPreview();
+}
+
+function applyCellField(cell: RichBlockTableCell, field: keyof RichBlockTableCell, input: HTMLInputElement | HTMLSelectElement): void {
+  const el = input as HTMLInputElement;
+  if (field === 'isHeader') cell.isHeader = el.checked;
+  else if (field === 'colspan' || field === 'rowspan') {
+    const n = Number(el.value);
+    cell[field] = Number.isFinite(n) && n > 1 ? n : undefined;
+  } else if (field === 'align' || field === 'valign') {
+    cell[field] = (input as HTMLSelectElement).value as RichBlockTableCell['align'] & RichBlockTableCell['valign'];
+  } else {
+    cell.text = el.value;
+  }
+  refreshPreview();
+}
+
+function clearRichButtonPayloads(button: RichMessageButton): void {
+  button.url = undefined;
+  button.callbackData = undefined;
+  button.webAppUrl = undefined;
+  button.loginUrl = undefined;
+  button.switchInlineQuery = undefined;
+  button.switchInlineQueryCurrentChat = undefined;
+  button.copyText = undefined;
+}
+
 function resetEditorState(): void {
-  state.editor = { ...initialEditorState };
+  // Deep clone so the shared initialEditorState arrays (buttons, richBlocks…)
+  // aren't mutated by the next session.
+  state.editor = JSON.parse(JSON.stringify(initialEditorState)) as EditorState;
 }
 
 async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<void> {
@@ -999,24 +1490,18 @@ function renderEditorChannelPreview(): void {
   `;
 }
 
-function syncEditorFields(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement): void {
+function syncEditorFields(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement | null): void {
   state.editor.title = titleInput.value;
   state.editor.channelId = channelSelect.value;
-  state.editor.text = textarea.value;
+  if (textarea) state.editor.text = textarea.value;
+  const richHtml = document.getElementById('rich-html') as HTMLTextAreaElement | null;
+  if (richHtml) state.editor.richHtml = richHtml.value;
+  const richMarkdown = document.getElementById('rich-markdown') as HTMLTextAreaElement | null;
+  if (richMarkdown) state.editor.richMarkdown = richMarkdown.value;
 }
 
 function createPayload(status: PostPayload['status']): PostPayload {
-  const now = new Date().toISOString();
-  return {
-    title: state.editor.title.trim() || 'Untitled Announcement',
-    channelId: state.editor.channelId,
-    text: state.editor.text,
-    parseMode: 'HTML',
-    buttons: state.editor.buttons,
-    status,
-    createdAt: now,
-    updatedAt: now
-  };
+  return buildPayload(state.editor, status);
 }
 
 function applyFormat(action: string | undefined, textarea: HTMLTextAreaElement): string {
@@ -1033,20 +1518,63 @@ function applyFormat(action: string | undefined, textarea: HTMLTextAreaElement):
   }
 }
 
+function newInlineButton(): InlineButton {
+  return { text: '', url: '', kind: 'url' };
+}
+
+function clearInlineButtonPayload(button: InlineButton): void {
+  button.url = '';
+  button.callbackData = undefined;
+  button.webAppUrl = undefined;
+  button.loginUrl = undefined;
+  button.switchInlineQuery = undefined;
+  button.switchInlineQueryCurrentChat = undefined;
+  button.copyText = undefined;
+}
+
 function bindButtonBuilder(): void {
   qs<HTMLButtonElement>('#add-button-row').addEventListener('click', () => {
-    state.editor.buttons.push([{ text: '', url: '' }]);
+    state.editor.buttons.push([newInlineButton()]);
     void render('editor');
   });
 
   document.querySelectorAll<HTMLInputElement>('[data-button-field]').forEach((input) => {
-    input.addEventListener('input', () => updateButtonFromInput(input));
+    input.addEventListener('input', () => updateButtonTextFromInput(input));
+  });
+
+  // Kind picker on each inline button.
+  document.querySelectorAll<HTMLSelectElement>('[data-button-kind]').forEach((sel) => {
+    sel.addEventListener('change', () => {
+      const parent = sel.closest<HTMLElement>('.builder-button');
+      if (!parent) return;
+      const [rowIndex, buttonIndex] = getButtonPosition(parent);
+      const button = state.editor.buttons[rowIndex][buttonIndex];
+      button.kind = sel.value as InlineButtonKind;
+      clearInlineButtonPayload(button);
+      void render('editor');
+    });
+  });
+
+  // Kind-specific payload input.
+  document.querySelectorAll<HTMLInputElement>('[data-button-payload]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const parent = input.closest<HTMLElement>('.builder-button');
+      if (!parent) return;
+      const [rowIndex, buttonIndex] = getButtonPosition(parent);
+      const button = state.editor.buttons[rowIndex][buttonIndex];
+      const spec = INLINE_BUTTON_PAYLOAD_FIELDS[button.kind ?? 'url'];
+      if (!spec) return;
+      (button as unknown as Record<string, unknown>)[spec.field] = input.value;
+      // Mirror to legacy `url` field when kind === 'url' so old consumers keep working.
+      if ((button.kind ?? 'url') === 'url') button.url = input.value;
+      refreshPreview();
+    });
   });
 
   document.querySelectorAll<HTMLButtonElement>('[data-add-button]').forEach((button) => {
     button.addEventListener('click', () => {
       const rowIndex = Number(button.dataset.addButton);
-      state.editor.buttons[rowIndex].push({ text: '', url: '' });
+      state.editor.buttons[rowIndex].push(newInlineButton());
       void render('editor');
     });
   });
@@ -1071,12 +1599,12 @@ function bindButtonBuilder(): void {
   });
 }
 
-function updateButtonFromInput(input: HTMLInputElement): void {
+function updateButtonTextFromInput(input: HTMLInputElement): void {
   const parent = input.closest<HTMLElement>('.builder-button');
   if (!parent) return;
 
   const [rowIndex, buttonIndex] = getButtonPosition(parent);
-  const field = input.dataset.buttonField as 'text' | 'url';
+  const field = input.dataset.buttonField as 'text';
   state.editor.buttons[rowIndex][buttonIndex][field] = input.value;
   refreshPreview();
 }
@@ -1156,7 +1684,7 @@ function ScheduleSheet(): string {
   `;
 }
 
-function bindScheduleSheet(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement): void {
+function bindScheduleSheet(titleInput: HTMLInputElement, channelSelect: HTMLSelectElement, textarea: HTMLTextAreaElement | null): void {
   const scheduleBtn = document.getElementById('schedule-btn');
   const sheet = document.getElementById('schedule-sheet');
   const backdrop = document.getElementById('schedule-backdrop');
@@ -1238,7 +1766,11 @@ function refreshPreview(): void {
   if (!root) return;
 
   const selectedChannel = getSelectedEditorChannel();
-  root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, { channelName: selectedChannel?.name });
+  root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, {
+    channelName: selectedChannel?.name,
+    mode: state.editor.mode,
+    rich: state.editor.mode === 'rich' ? buildRichMessage(state.editor) : undefined
+  });
   bindSpoilers(root);
 }
 
