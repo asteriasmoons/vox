@@ -125,6 +125,11 @@ function renderRichBody(rich: RichMessage): string {
     case 'markdown': body = renderRichMarkdown(rich.markdown ?? '', media); break;
     case 'blocks': body = renderRichBlocks(rich.blocks ?? []); break;
   }
+  // The rich-mode Inline Buttons live inside the message body for every
+  // flavor (rich messages don't use reply_markup), so tack them on here.
+  if (rich.editorButtons && rich.editorButtons.length > 0) {
+    body += renderRichButtonsRow(rich.editorButtons, rich.editorButtonsAlign);
+  }
   const rtl = rich.isRtl ? ' dir="rtl"' : '';
   return `<div class="tg-rich" data-flavor="${rich.flavor}"${rtl}>${body || '<span class="tg-placeholder">Rich message preview…</span>'}</div>`;
 }

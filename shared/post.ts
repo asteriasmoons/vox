@@ -130,6 +130,20 @@ export interface RichMessageButton {
   switchInlineQuery?: string;
   switchInlineQueryCurrentChat?: string;
   copyText?: string;
+  /**
+   * Optional follow-up for callback-data buttons only. When enabled, tapping
+   * the button makes the bot send a regular Telegram message either into the
+   * same chat the rich message lives in ("channel") or into the tapper's DM
+   * with the bot ("dm"). Independent per button; ignored for other kinds.
+   */
+  followUp?: CallbackFollowUp;
+}
+
+export interface CallbackFollowUp {
+  enabled: boolean;
+  destination: 'channel' | 'dm';
+  text: string;
+  parseMode?: 'HTML' | 'Markdown' | 'MarkdownV2';
 }
 
 /**
@@ -219,6 +233,16 @@ export interface RichMessage {
   media?: RichMediaRef[];
   isRtl?: boolean;
   skipEntityDetection?: boolean;
+  /**
+   * Editor-only companion for the "Inline Buttons" card while composing
+   * a rich message. Persisted with the draft so the editor can hydrate
+   * back to this state, and merged into the message body at send time —
+   * as an InputRichBlockButtons block for the Blocks flavor, or as
+   * <tg-button-row>…</tg-button-row> for the HTML and Markdown flavors.
+   * Rich messages never use reply_markup for these buttons.
+   */
+  editorButtons?: RichMessageButton[];
+  editorButtonsAlign?: 'left' | 'center' | 'right';
 }
 
 export type PostMode = 'regular' | 'rich';

@@ -3,17 +3,21 @@ import { GlassCard } from '../components/GlassCard';
 import { Header } from '../components/Header';
 import { PostPreview } from '../components/PostPreview';
 import { RichBlockBuilder } from '../components/RichBlockBuilder';
+import { RichButtonBuilder } from '../components/RichButtonBuilder';
 import { RichMediaList } from '../components/RichMediaList';
 import { RichTextToolbar } from '../components/RichTextToolbar';
 import type {
   Channel,
+  InlineButton,
+  InlineButtonKind,
   InlineButtonRows,
   PostMode,
   PostPayload,
   RichBlock,
   RichFlavor,
   RichMediaRef,
-  RichMessage
+  RichMessage,
+  RichMessageButton
 } from '../types/post';
 
 export interface EditorState {
@@ -31,6 +35,11 @@ export interface EditorState {
   richMedia: RichMediaRef[];
   richIsRtl: boolean;
   richSkipEntityDetection: boolean;
+  // Rich mode's version of the "Inline Buttons" card — these support style
+  // and every rich button kind. Rendered as a Buttons block for the Blocks
+  // flavor, and converted to reply_markup for the HTML / Markdown flavors.
+  richButtons: RichMessageButton[];
+  richButtonsAlign?: 'left' | 'center' | 'right';
 }
 
 export const initialEditorState: EditorState = {
@@ -46,7 +55,9 @@ export const initialEditorState: EditorState = {
   richBlocks: [],
   richMedia: [],
   richIsRtl: false,
-  richSkipEntityDetection: false
+  richSkipEntityDetection: false,
+  richButtons: [],
+  richButtonsAlign: 'left'
 };
 
 export function buildRichMessage(state: EditorState): RichMessage {
@@ -57,17 +68,40 @@ export function buildRichMessage(state: EditorState): RichMessage {
   if (state.richFlavor !== 'blocks' && state.richMedia.length > 0) rich.media = state.richMedia;
   if (state.richIsRtl) rich.isRtl = true;
   if (state.richSkipEntityDetection) rich.skipEntityDetection = true;
+  // The editor's Inline Buttons card in Rich mode is preserved as an
+  // editor-only field on the rich message. The send layer merges it into
+  // the message body natively — as a Buttons block for Blocks, as
+  // <tg-button-row> for HTML/Markdown — so no reply_markup fallback.
+  if (state.richButtons.length > 0) {
+    rich.editorButtons = state.richButtons;
+    rich.editorButtonsAlign = state.richButtonsAlign;
+  }
   return rich;
+}
+
+/**
+ * What the reply-keyboard row under the bubble should show. In Regular mode
+ * it's the reply_markup keyboard. Rich messages never use reply_markup —
+ * their buttons live inside the message body regardless of flavor — so this
+ * returns an empty array in Rich mode and the preview draws them inline.
+ */
+export function previewButtons(state: EditorState): InlineButtonRows {
+  return state.mode === 'rich' ? [] : state.buttons;
 }
 
 export function createPayload(state: EditorState, status: PostPayload['status']): PostPayload {
   const now = new Date().toISOString();
+
+  // Rich messages never carry reply_markup — every button they need is
+  // authored inside the rich body itself (buttons block for Blocks, or
+  // <tg-button-row> for HTML / Markdown). Only Regular mode uses the
+  // reply_markup keyboard.
   return {
     title: state.title.trim() || 'Untitled Announcement',
     channelId: state.channelId,
     text: state.text,
     parseMode: 'HTML',
-    buttons: state.buttons,
+    buttons: state.mode === 'rich' ? [] : state.buttons,
     status,
     createdAt: now,
     updatedAt: now,
@@ -109,7 +143,12 @@ export function PostEditorPage(state: EditorState): string {
         ${state.mode === 'regular' ? regularBody(state) : richBody(state)}
       `, 'editor-card')}
 
-      ${GlassCard(ButtonBuilder(state.buttons), 'builder-card')}
+      ${GlassCard(
+        state.mode === 'rich'
+          ? RichButtonBuilder(state.richButtons, { scope: 'top', align: state.richButtonsAlign })
+          : ButtonBuilder(state.buttons),
+        'builder-card'
+      )}
 
       ${GlassCard(`
         <div class="section-heading">
@@ -118,7 +157,7 @@ export function PostEditorPage(state: EditorState): string {
             <p>Best-effort visual — Telegram may render some blocks differently.</p>
           </div>
         </div>
-        <div id="preview-root">${PostPreview(state.text, state.buttons, {
+        <div id="preview-root">${PostPreview(state.text, previewButtons(state), {
           channelName: selectedChannel?.name,
           mode: state.mode,
           rich: state.mode === 'rich' ? buildRichMessage(state) : undefined

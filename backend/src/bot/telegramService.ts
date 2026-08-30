@@ -12,6 +12,7 @@ import type {
   RichMessageButton
 } from '../types/post.js';
 import { getChannelByTelegramChatId } from '../services/channelService.js';
+import { registerCallbackFollowUp } from '../services/callbackFollowUpService.js';
 import { getTelegramClient } from './telegramClient.js';
 import { requireTelegramToken } from '../utils/env.js';
 
@@ -33,9 +34,43 @@ export async function publishPostToTelegram(post: PostPayload): Promise<number> 
   const chatId = Number(channel.telegramChatId);
   if (post.mode === 'rich') {
     if (!post.rich) throw new Error('Rich mode selected but the payload is missing `rich`.');
-    return sendRichMessage(chatId, post.rich, post.buttons);
+    const messageId = await sendRichMessage(chatId, post.rich, post.buttons);
+    // After a successful publish, remember each callback button's follow-up
+    // so the callback-query handler can look it up when the button is tapped.
+    await recordCallbackFollowUps(chatId, post.rich);
+    return messageId;
   }
   return sendRegularMessage(chatId, post);
+}
+
+/**
+ * Walk every rich button attached to this rich message and register any
+ * follow-up responses. Covers both the top-level Inline Buttons card
+ * (rich.editorButtons) and any Buttons blocks nested inside rich.blocks.
+ */
+async function recordCallbackFollowUps(chatId: number, rich: RichMessage): Promise<void> {
+  const buttons: RichMessageButton[] = [];
+  for (const b of rich.editorButtons ?? []) buttons.push(b);
+  for (const b of collectButtonsFromBlocks(rich.blocks ?? [])) buttons.push(b);
+
+  await Promise.all(
+    buttons
+      .filter((b) => b.kind === 'callback_data' && b.callbackData && b.followUp?.enabled && b.followUp.text.trim())
+      .map((b) => registerCallbackFollowUp(chatId, b.callbackData as string, b.followUp!))
+  );
+}
+
+function collectButtonsFromBlocks(blocks: RichBlock[]): RichMessageButton[] {
+  const out: RichMessageButton[] = [];
+  for (const block of blocks) {
+    if (block.type === 'buttons') out.push(...block.buttons);
+    else if (block.type === 'blockquote' || block.type === 'details' || block.type === 'collage' || block.type === 'slideshow') {
+      out.push(...collectButtonsFromBlocks(block.blocks));
+    } else if (block.type === 'list') {
+      for (const item of block.items) out.push(...collectButtonsFromBlocks(item.blocks));
+    }
+  }
+  return out;
 }
 
 // ─── Regular posts: the plain sendMessage path ────────────────────────────────
@@ -55,13 +90,14 @@ async function sendRegularMessage(chatId: number, post: PostPayload): Promise<nu
 
 // ─── Rich messages: fancy-formatted posts with blocks and media ──────────────
 
-async function sendRichMessage(chatId: number, rich: RichMessage, buttons: InlineButtonRows): Promise<number> {
+async function sendRichMessage(chatId: number, rich: RichMessage, _buttons: InlineButtonRows): Promise<number> {
+  // Rich messages don't take reply_markup for their buttons — every button
+  // lives inside the rich body itself. `_buttons` is ignored here on
+  // purpose; the frontend leaves it empty in Rich mode.
   const body: Record<string, unknown> = {
     chat_id: chatId,
     rich_message: toInputRichMessage(rich)
   };
-  const replyMarkup = toReplyMarkup(buttons);
-  if (replyMarkup) body.reply_markup = replyMarkup;
 
   const response = await callBotApi('sendRichMessage', body);
   const messageId = (response as { result?: { message_id?: number } }).result?.message_id;
@@ -90,14 +126,73 @@ async function callBotApi(method: string, body: Record<string, unknown>): Promis
 
 function toInputRichMessage(rich: RichMessage): Record<string, unknown> {
   const out: Record<string, unknown> = {};
+  const editorButtons = rich.editorButtons ?? [];
+  const editorAlign = rich.editorButtonsAlign;
+
   // Exactly one of html / markdown / blocks must be present per the API.
-  if (rich.flavor === 'html') out.html = rich.html ?? '';
-  else if (rich.flavor === 'markdown') out.markdown = rich.markdown ?? '';
-  else out.blocks = (rich.blocks ?? []).map(toInputRichBlock);
+  if (rich.flavor === 'html') {
+    const suffix = editorButtons.length > 0 ? renderTgButtonRowHtml(editorButtons, editorAlign) : '';
+    out.html = (rich.html ?? '') + suffix;
+  } else if (rich.flavor === 'markdown') {
+    // Markdown flavor accepts inline HTML tags, so <tg-button-row> works here too.
+    const suffix = editorButtons.length > 0 ? '\n\n' + renderTgButtonRowHtml(editorButtons, editorAlign) : '';
+    out.markdown = (rich.markdown ?? '') + suffix;
+  } else {
+    const blocks = (rich.blocks ?? []).map(toInputRichBlock);
+    if (editorButtons.length > 0) {
+      const buttonsBlock: Record<string, unknown> = {
+        type: 'buttons',
+        buttons: editorButtons.map(toRichMessageButton)
+      };
+      if (editorAlign) buttonsBlock.align = editorAlign;
+      blocks.push(buttonsBlock);
+    }
+    out.blocks = blocks;
+  }
   if (rich.media && rich.media.length > 0) out.media = rich.media.map(toInputRichMessageMedia);
   if (rich.isRtl) out.is_rtl = true;
   if (rich.skipEntityDetection) out.skip_entity_detection = true;
   return out;
+}
+
+/**
+ * Serialize a row of rich buttons as the native rich-HTML
+ * <tg-button-row>…<tg-button …>…</tg-button>…</tg-button-row> markup.
+ * Used to fold the editor's Inline Buttons into html and markdown bodies.
+ */
+function renderTgButtonRowHtml(buttons: RichMessageButton[], align?: 'left' | 'center' | 'right'): string {
+  const attrs = align ? ` align="${align}"` : '';
+  const items = buttons.map(renderTgButtonHtml).join('');
+  return `<tg-button-row${attrs}>${items}</tg-button-row>`;
+}
+
+function renderTgButtonHtml(button: RichMessageButton): string {
+  const style = button.style ? ` style="${button.style}"` : '';
+  const label = escapeXml(button.text ?? '');
+  switch (button.kind) {
+    case 'url':
+      return `<tg-button type="url"${style} url="${escapeXml(button.url ?? '')}">${label}</tg-button>`;
+    case 'callback_data':
+      return `<tg-button type="callback_data"${style} data="${escapeXml(button.callbackData ?? '')}">${label}</tg-button>`;
+    case 'web_app':
+      return `<tg-button type="web_app"${style} url="${escapeXml(button.webAppUrl ?? '')}">${label}</tg-button>`;
+    case 'login_url':
+      return `<tg-button type="login_url"${style} url="${escapeXml(button.loginUrl ?? '')}">${label}</tg-button>`;
+    case 'switch_inline_query':
+      return `<tg-button type="switch_inline_query"${style} query="${escapeXml(button.switchInlineQuery ?? '')}">${label}</tg-button>`;
+    case 'switch_inline_query_current_chat':
+      return `<tg-button type="switch_inline_query_current_chat"${style} query="${escapeXml(button.switchInlineQueryCurrentChat ?? '')}">${label}</tg-button>`;
+    case 'copy_text':
+      return `<tg-button type="copy_text"${style} text="${escapeXml(button.copyText ?? '')}">${label}</tg-button>`;
+    case 'pay':
+      // RichMessageButton has no pay kind on the wire — closest equivalent
+      // is a disabled button so it doesn't fire but stays visible.
+      return `<tg-button type="disabled"${style}>${label}</tg-button>`;
+  }
+}
+
+function escapeXml(s: string): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function toInputRichMessageMedia(ref: RichMediaRef): Record<string, unknown> {

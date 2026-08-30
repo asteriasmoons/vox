@@ -1,4 +1,4 @@
-import type { RichMessageButton, RichButtonStyle } from '../types/post';
+import type { CallbackFollowUp, RichMessageButton, RichButtonStyle } from '../types/post';
 
 /**
  * Builder for the buttons that live inside a rich message's Buttons block.
@@ -97,6 +97,7 @@ function renderRichButton(button: RichMessageButton, index: number): string {
           ${STYLES.map((s) => `<option value="${s}"${s === button.style ? ' selected' : ''}>${s}${s === 'link' ? ' (callback only)' : ''}</option>`).join('')}
         </select>
       </div>
+      ${button.kind === 'callback_data' ? renderFollowUp(button.followUp) : ''}
       <div class="rich-button-actions">
         <button type="button" data-rich-button-move="-1" aria-label="Move up">↑</button>
         <button type="button" data-rich-button-move="1" aria-label="Move down">↓</button>
@@ -104,6 +105,42 @@ function renderRichButton(button: RichMessageButton, index: number): string {
       </div>
     </div>
   `;
+}
+
+/**
+ * Follow-up panel — only shown for callback-data buttons. When enabled, the
+ * bot sends this message to the chat or to the tapper's DM when the button
+ * is pressed. The callback_data value still identifies the button as before.
+ */
+function renderFollowUp(followUp: CallbackFollowUp | undefined): string {
+  const enabled = Boolean(followUp?.enabled);
+  const destination = followUp?.destination ?? 'channel';
+  const text = followUp?.text ?? '';
+  const summaryBadge = enabled
+    ? `<span class="follow-up-badge">Sends to ${destination === 'dm' ? 'the tapper' : 'the channel'}</span>`
+    : '<span class="follow-up-badge follow-up-badge-off">No follow-up</span>';
+  return `
+    <div class="rich-button-followup">
+      <div class="rich-button-followup-header">
+        <label><input type="checkbox" data-rich-button-followup-field="enabled" ${enabled ? 'checked' : ''} /> <strong>Callback Response</strong></label>
+        ${summaryBadge}
+      </div>
+      <div class="rich-button-followup-body" ${enabled ? '' : 'hidden'}>
+        <label class="rich-button-followup-dest">
+          Destination
+          <select data-rich-button-followup-field="destination" class="input">
+            <option value="channel"${destination === 'channel' ? ' selected' : ''}>Channel — sends into the same chat</option>
+            <option value="dm"${destination === 'dm' ? ' selected' : ''}>DM — sends privately to whoever tapped</option>
+          </select>
+        </label>
+        <textarea data-rich-button-followup-field="text" placeholder="What the bot should reply with…">${escapeText(text)}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function escapeText(str: string): string {
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function escapeAttr(str: string): string {

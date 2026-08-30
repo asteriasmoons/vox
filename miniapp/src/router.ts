@@ -5,7 +5,7 @@ import { DraftsPage, draftCard } from './pages/DraftsPage';
 import { CalendarPage, renderMonthGrid, renderWeekGrid, renderDayView, renderAgendaView } from './pages/CalendarPage';
 import { AnalyticsPage, renderBarChart, renderHeatmap } from './pages/AnalyticsPage';
 import { TemplatesPage, templateCard } from './pages/TemplatesPage';
-import { buildRichMessage, createPayload as buildPayload, initialEditorState, PostEditorPage, type EditorState } from './pages/PostEditorPage';
+import { buildRichMessage, createPayload as buildPayload, initialEditorState, PostEditorPage, previewButtons, type EditorState } from './pages/PostEditorPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PostPreview } from './components/PostPreview';
 import { INLINE_BUTTON_PAYLOAD_FIELDS } from './components/ButtonBuilder';
@@ -489,7 +489,11 @@ function loadDraftIntoEditor(draft: Draft, channels: Channel[]): void {
     richBlocks: rich?.blocks ? JSON.parse(JSON.stringify(rich.blocks)) as RichBlock[] : [],
     richMedia: rich?.media ? JSON.parse(JSON.stringify(rich.media)) as RichMediaRef[] : [],
     richIsRtl: Boolean(rich?.isRtl),
-    richSkipEntityDetection: Boolean(rich?.skipEntityDetection)
+    richSkipEntityDetection: Boolean(rich?.skipEntityDetection),
+    // Rich-mode Inline Buttons are saved directly on the rich message as
+    // editor-only fields, so hydration is a straight copy.
+    richButtons: rich?.editorButtons ? JSON.parse(JSON.stringify(rich.editorButtons)) as RichMessageButton[] : [],
+    richButtonsAlign: rich?.editorButtonsAlign ?? 'left'
   };
 
   void render('editor');
@@ -1302,22 +1306,30 @@ function bindRichBlockBuilder(): void {
     });
   });
 
-  // Rich buttons (inside InputRichBlockButtons blocks).
+  // Rich buttons. `scope="top"` targets the editor's top-level rich buttons
+  // (the "Inline Buttons" card while in Rich mode); any other scope points
+  // at a Buttons block inside the blocks tree.
   document.querySelectorAll<HTMLElement>('[data-rich-buttons-scope]').forEach((scope) => {
     const path = scope.dataset.richButtonsScope || '';
-    const block = getBlockAtPath(path);
-    if (!block || block.type !== 'buttons') return;
+    const container = path === 'top'
+      ? { buttons: state.editor.richButtons, align: state.editor.richButtonsAlign, setAlign: (v: 'left' | 'center' | 'right') => { state.editor.richButtonsAlign = v; } }
+      : (() => {
+          const block = getBlockAtPath(path);
+          if (!block || block.type !== 'buttons') return null;
+          return { buttons: block.buttons, align: block.align, setAlign: (v: 'left' | 'center' | 'right') => { block.align = v; } };
+        })();
+    if (!container) return;
 
     scope.querySelector<HTMLButtonElement>('[data-rich-buttons-add]')?.addEventListener('click', () => {
-      block.buttons.push({ text: '', kind: 'url', url: '' });
+      container.buttons.push({ text: '', kind: 'url', url: '' });
       void render('editor');
     });
     const alignSel = scope.querySelector<HTMLSelectElement>('[data-rich-buttons-align]');
-    if (alignSel) alignSel.addEventListener('change', () => { block.align = alignSel.value as 'left' | 'center' | 'right'; refreshPreview(); });
+    if (alignSel) alignSel.addEventListener('change', () => { container.setAlign(alignSel.value as 'left' | 'center' | 'right'); refreshPreview(); });
 
     scope.querySelectorAll<HTMLElement>('[data-rich-button-index]').forEach((row) => {
       const index = Number(row.dataset.richButtonIndex);
-      const button = block.buttons[index];
+      const button = container.buttons[index];
       if (!button) return;
 
       row.querySelector<HTMLInputElement>('[data-rich-button-field="text"]')?.addEventListener('input', (e) => {
@@ -1341,17 +1353,41 @@ function bindRichBlockBuilder(): void {
         if (spec) (button as unknown as Record<string, unknown>)[spec.field] = value;
         refreshPreview();
       });
+
+      // Callback Response follow-up — only meaningful when kind is 'callback_data'.
+      row.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[data-rich-button-followup-field]').forEach((el) => {
+        const field = el.dataset.richButtonFollowupField as 'enabled' | 'destination' | 'text';
+        const evt = (el as HTMLInputElement).type === 'checkbox' || el instanceof HTMLSelectElement ? 'change' : 'input';
+        el.addEventListener(evt, () => {
+          const current = button.followUp ?? { enabled: false, destination: 'channel', text: '' };
+          if (field === 'enabled') {
+            current.enabled = (el as HTMLInputElement).checked;
+            button.followUp = current;
+            void render('editor');
+            return;
+          }
+          if (field === 'destination') {
+            current.destination = (el as HTMLSelectElement).value === 'dm' ? 'dm' : 'channel';
+            button.followUp = current;
+            void render('editor');
+            return;
+          }
+          current.text = (el as HTMLTextAreaElement).value;
+          button.followUp = current;
+          refreshPreview();
+        });
+      });
       row.querySelector<HTMLButtonElement>('[data-rich-button-remove]')?.addEventListener('click', () => {
-        block.buttons.splice(index, 1);
+        container.buttons.splice(index, 1);
         void render('editor');
       });
       row.querySelectorAll<HTMLButtonElement>('[data-rich-button-move]').forEach((mv) => {
         mv.addEventListener('click', () => {
           const dir = Number(mv.dataset.richButtonMove);
           const next = index + dir;
-          if (next < 0 || next >= block.buttons.length) return;
-          const [b] = block.buttons.splice(index, 1);
-          block.buttons.splice(next, 0, b);
+          if (next < 0 || next >= container.buttons.length) return;
+          const [b] = container.buttons.splice(index, 1);
+          container.buttons.splice(next, 0, b);
           void render('editor');
         });
       });
@@ -1480,6 +1516,9 @@ function clearRichButtonPayloads(button: RichMessageButton): void {
   button.switchInlineQuery = undefined;
   button.switchInlineQueryCurrentChat = undefined;
   button.copyText = undefined;
+  // Follow-up only applies to callback-data buttons, so drop it when the
+  // kind changes; it comes back to defaults if the user goes back to callback.
+  button.followUp = undefined;
 }
 
 function resetEditorState(): void {
@@ -1843,7 +1882,7 @@ function refreshPreview(): void {
   if (!root) return;
 
   const selectedChannel = getSelectedEditorChannel();
-  root.innerHTML = PostPreview(state.editor.text, state.editor.buttons, {
+  root.innerHTML = PostPreview(state.editor.text, previewButtons(state.editor), {
     channelName: selectedChannel?.name,
     mode: state.editor.mode,
     rich: state.editor.mode === 'rich' ? buildRichMessage(state.editor) : undefined

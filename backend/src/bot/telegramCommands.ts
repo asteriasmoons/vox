@@ -1,5 +1,6 @@
 import type TelegramBot from "node-telegram-bot-api";
 import { env } from "../utils/env.js";
+import { lookupCallbackFollowUp } from "../services/callbackFollowUpService.js";
 import { getTelegramClient } from "./telegramClient.js";
 
 const COMMANDS: TelegramBot.BotCommand[] = [
@@ -219,4 +220,53 @@ export async function registerTelegramCommands(): Promise<void> {
       switch_pm_parameter: "inline",
     });
   });
+
+  bot.on("callback_query", (query) => {
+    void handleCallbackQuery(bot, query);
+  });
+}
+
+/**
+ * When someone taps a rich-message callback button, look up whether that
+ * button was configured with a follow-up response. If so, send it to the
+ * right destination (the chat the rich message lives in, or the tapper's
+ * DM). Regardless of outcome, answer the callback so the client stops
+ * showing its loading state.
+ */
+async function handleCallbackQuery(bot: TelegramBot, query: TelegramBot.CallbackQuery): Promise<void> {
+  const data = query.data;
+  const messageChat = query.message?.chat;
+
+  try {
+    if (!data || !messageChat) {
+      await bot.answerCallbackQuery(query.id);
+      return;
+    }
+
+    const followUp = await lookupCallbackFollowUp(messageChat.id, data);
+    if (!followUp?.enabled || !followUp.text.trim()) {
+      // No configured response for this button — the callback still needs
+      // an ack, but there's nothing to send.
+      await bot.answerCallbackQuery(query.id);
+      return;
+    }
+
+    const target = followUp.destination === "dm" ? query.from.id : messageChat.id;
+
+    try {
+      await bot.sendMessage(target, followUp.text, followUp.parseMode ? { parse_mode: followUp.parseMode } : undefined);
+      await bot.answerCallbackQuery(query.id);
+    } catch (sendError) {
+      // Most common cause on DM: the user has never started a chat with the
+      // bot, so Telegram refuses. Surface a short toast on the button.
+      console.warn("Follow-up send failed:", sendError);
+      const notice = followUp.destination === "dm"
+        ? "Open a chat with the bot first so it can DM you."
+        : "Could not send the follow-up message.";
+      await bot.answerCallbackQuery(query.id, { text: notice, show_alert: true }).catch(() => undefined);
+    }
+  } catch (error) {
+    console.error("callback_query handler failed:", error);
+    try { await bot.answerCallbackQuery(query.id); } catch { /* nothing */ }
+  }
 }

@@ -662,3 +662,59 @@
   color: rgba(247, 237, 255, 0.55);
   font-size: 0.78rem;
 }
+
+/* ─── Rich callback follow-up panel ───────────────────────────────────── */
+
+.rich-button-followup {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: grid;
+  gap: 8px;
+}
+.rich-button-followup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.rich-button-followup-header strong {
+  color: #00dbff;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.follow-up-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.35), rgba(128, 0, 254, 0.35), rgba(0, 219, 255, 0.35));
+  color: #fff;
+}
+.follow-up-badge-off {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 237, 255, 0.55);
+}
+.rich-button-followup-body {
+  display: grid;
+  gap: 8px;
+}
+.rich-button-followup-dest {
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: rgba(247, 237, 255, 0.72);
+}
+.rich-button-followup textarea {
+  min-height: 80px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  resize: vertical;
+}
