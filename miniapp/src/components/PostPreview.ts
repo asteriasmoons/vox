@@ -81,7 +81,7 @@ function renderKeyboard(buttons: InlineButtonRows): string {
     <div class="tg-keyboard">
       ${previewRows.map((row) => `
         <div class="tgme_widget_message_inline_row">
-          ${row.map((b) => `<a class="tgme_widget_message_inline_button ${kindClass(b)}" href="${escapeAttr(inlineButtonHref(b))}" target="_blank" rel="noopener noreferrer"><span class="tgme_widget_message_inline_button_text" dir="auto">${escapeHtml(b.text)} ${kindBadge(b)}</span></a>`).join('')}
+          ${row.map((b) => `<a class="tgme_widget_message_inline_button ${kindClass(b)}" href="${escapeAttr(inlineButtonHref(b))}" target="_blank" rel="noopener noreferrer"><span class="tgme_widget_message_inline_button_text" dir="auto">${escapeHtml(b.text)}</span></a>`).join('')}
         </div>`).join('')}
     </div>
   `;
@@ -319,8 +319,7 @@ function renderRichButtonsRow(buttons: RichMessageButton[], align?: 'left' | 'ce
   if (buttons.length === 0) return '';
   return `<div class="tg-rich-buttons" style="justify-content:${alignToJustify(align)}">${buttons.map((b) => {
     const style = b.style ? ` tg-rich-button-${b.style}` : '';
-    const badge = kindBadge({ ...b, url: b.url ?? '' } as unknown as InlineButton);
-    return `<span class="tg-rich-button${style}">${escapeHtml(b.text)} ${badge}</span>`;
+    return `<span class="tg-rich-button${style}">${escapeHtml(b.text)}</span>`;
   }).join('')}</div>`;
 }
 

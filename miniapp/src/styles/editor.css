@@ -473,11 +473,17 @@
 
 /* ─── Rich preview ────────────────────────────────────────────────────── */
 
-/* Match Telegram's actual message text weight — the app's global weight
-   reads as "everything is bold" without this explicit reset. */
-.tg-rich, .tg-rich-p, .tg-rich-footer, .tg-rich-bq, .tg-rich-pullquote, .tg-rich-list, .tg-rich-details {
-  font-weight: 400;
-}
+/* Force the preview bubble text to the actual Telegram weight — the app's
+   global font-weight is heavier and cascades in through every child unless
+   we pin it here. !important because a few global rules target this bubble
+   with high specificity we don't want to fight one by one. */
+.tg-preview .tgme_widget_message_text,
+.tg-preview .tgme_widget_message_text * { font-weight: 400 !important; }
+.tg-preview .tgme_widget_message_text b,
+.tg-preview .tgme_widget_message_text strong,
+.tg-preview .tgme_widget_message_text .tg-rich-h { font-weight: 700 !important; }
+.tg-preview .tgme_widget_message_text i,
+.tg-preview .tgme_widget_message_text em { font-style: italic !important; }
 .tg-rich { display: grid; gap: 6px; color: #fff; }
 .tg-rich-h { margin: 6px 0 2px; color: #fff; font-weight: 700; line-height: 1.25; }
 .tg-rich-h + .tg-rich-p, .tg-rich-p + .tg-rich-p { margin-top: 4px; }
@@ -493,8 +499,15 @@
   background: linear-gradient(90deg, transparent, rgba(0, 219, 255, 0.6), rgba(128, 0, 254, 0.6), rgba(224, 25, 212, 0.6), transparent);
   border-radius: 2px;
 }
-.tg-rich-bq { margin: 4px 0; padding: 6px 10px; border-left: 3px solid #00dbff; background: rgba(0, 219, 255, 0.08); border-radius: 0 8px 8px 0; }
-.tg-rich-bq-expandable { border-left-color: #e019d4; }
+.tg-rich-bq {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-left: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.10);
+  border-radius: 10px;
+  color: #fff;
+}
+.tg-rich-bq-expandable { border-left-color: #00dbff; background: rgba(0, 219, 255, 0.10); }
 .tg-rich-pullquote { margin: 8px auto; padding: 8px 12px; text-align: center; font-style: italic; color: rgba(247,237,255,0.85); }
 .tg-rich-list { padding-left: 22px; }
 .tg-rich-details { padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.05); }
@@ -518,16 +531,17 @@
 .tg-rich-anchor { display: none; }
 .tg-rich-math { padding: 6px 10px; background: rgba(0,0,0,0.24); border-radius: 8px; font-family: ui-monospace, Menlo, monospace; }
 
-.tg-rich-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.tg-rich-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .tg-rich-button {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 6px 12px; border-radius: 10px;
-  background: rgba(255,255,255,0.1); color: #fff; font-weight: 700;
+  padding: 8px 16px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
-.tg-rich-button-primary { background: rgba(0, 219, 255, 0.28); }
-.tg-rich-button-success { background: rgba(34, 197, 94, 0.35); }
-.tg-rich-button-danger { background: rgba(239, 68, 68, 0.35); }
-.tg-rich-button-link { background: transparent; color: #00dbff; text-decoration: underline; padding: 4px 6px; }
+.tg-rich-button-primary { background: linear-gradient(135deg, #128bd9, #0088cc); color: #fff; border-color: transparent; }
+.tg-rich-button-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border-color: transparent; }
+.tg-rich-button-danger  { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border-color: transparent; }
+.tg-rich-button-link    { background: transparent; color: #00dbff; text-decoration: underline; padding: 6px 8px; border-color: transparent; }
 
 .tg-kind-badge { opacity: 0.75; font-size: 0.75em; margin-left: 4px; }
 .tg-md-h { margin: 6px 0; }
@@ -778,4 +792,11 @@
 .tg-rich, .tg-preview .tgme_widget_message_text {
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.rich-button-followup-hint {
+  margin: 0;
+  color: rgba(247, 237, 255, 0.6);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }

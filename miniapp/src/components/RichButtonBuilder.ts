@@ -31,7 +31,7 @@ const KIND_ORDER: RichMessageButton['kind'][] = [
 
 const PAYLOAD_FIELDS: Record<RichMessageButton['kind'], { field: keyof RichMessageButton; placeholder: string } | null> = {
   url: { field: 'url', placeholder: 'https://example.com or tg://…' },
-  callback_data: { field: 'callbackData', placeholder: 'action_id (1–64 bytes)' },
+  callback_data: { field: 'callbackData', placeholder: 'Button ID (short name — leave blank to auto-generate)' },
   web_app: { field: 'webAppUrl', placeholder: 'https://your.miniapp/…' },
   login_url: { field: 'loginUrl', placeholder: 'https://your.site/auth' },
   switch_inline_query: { field: 'switchInlineQuery', placeholder: 'default query text' },
@@ -122,9 +122,14 @@ function renderFollowUp(followUp: CallbackFollowUp | undefined): string {
   return `
     <div class="rich-button-followup">
       <div class="rich-button-followup-header">
-        <label><input type="checkbox" data-rich-button-followup-field="enabled" ${enabled ? 'checked' : ''} /> <strong>Callback Response</strong></label>
+        <label><input type="checkbox" data-rich-button-followup-field="enabled" ${enabled ? 'checked' : ''} /> <strong>Auto-reply when tapped</strong></label>
         ${summaryBadge}
       </div>
+      <p class="rich-button-followup-hint">
+        Turn this on to have the bot send a follow-up message the moment
+        someone taps this button — no code needed. If the Button ID above is
+        blank, one will be filled in for you.
+      </p>
       <div class="rich-button-followup-body" ${enabled ? '' : 'hidden'}>
         <label class="rich-button-followup-dest">
           Destination

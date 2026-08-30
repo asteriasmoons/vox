@@ -1363,6 +1363,12 @@ function bindRichBlockBuilder(): void {
           if (field === 'enabled') {
             current.enabled = (el as HTMLInputElement).checked;
             button.followUp = current;
+            // Save the user from having to invent a Button ID: fill one in
+            // automatically the moment they turn the auto-reply on if the
+            // field is empty.
+            if (current.enabled && !button.callbackData) {
+              button.callbackData = generateCallbackId();
+            }
             void render('editor');
             return;
           }
@@ -1506,6 +1512,15 @@ function applyCellField(cell: RichBlockTableCell, field: keyof RichBlockTableCel
     cell.text = el.value;
   }
   refreshPreview();
+}
+
+/**
+ * Short, url-safe id used to fill in an empty callback button when the user
+ * enables an auto-reply — Telegram allows up to 64 bytes and only cares that
+ * the value is unique per button on the message.
+ */
+function generateCallbackId(): string {
+  return 'cb_' + Math.random().toString(36).slice(2, 10);
 }
 
 function clearRichButtonPayloads(button: RichMessageButton): void {
