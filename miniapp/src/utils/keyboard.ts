@@ -28,7 +28,16 @@ export function initKeyboardDismissal(): void {
     blurActiveEditable();
   };
 
-  const dismissFromScroll = () => {
+  // Only dismiss on scroll when the scroll happened OUTSIDE the currently
+  // focused text field. Typing into a textarea can trigger the browser to
+  // auto-scroll the field itself into view — dismissing the keyboard there
+  // kicks the user out of the field on every keystroke. This guard keeps
+  // the tap-to-dismiss behavior for the rest of the app.
+  const dismissFromScroll = (event: Event) => {
+    const active = document.activeElement;
+    if (isEditableElement(active) && event.target instanceof Node && (active === event.target || active.contains(event.target))) {
+      return;
+    }
     blurActiveEditable();
   };
 

@@ -439,20 +439,51 @@
   border-radius: 14px;
   background: rgba(0,0,0,0.22);
 }
-.rich-button-row-inner { display: grid; grid-template-columns: minmax(120px, 1fr) minmax(160px, 2fr) minmax(140px, 1fr); gap: 6px; }
+/* Contain the button row inside the card — one column per line on narrow
+   screens so the payload field, kind picker and style picker never overflow. */
+.rich-button-row-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+.rich-button-row-inner > * { min-width: 0; max-width: 100%; }
+.rich-button-row input,
+.rich-button-row select,
+.rich-button-row textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.rich-button-heading-actions { flex-wrap: wrap; }
+.rich-button-align { flex-wrap: wrap; }
 .rich-button-actions { display: flex; gap: 6px; }
 .rich-button-actions button { min-height: 34px; padding: 0 8px; border-radius: 10px; background: rgba(255,255,255,0.08); color: #fff; border: 0; }
 
 /* ─── ButtonBuilder kind row (reply_markup) ───────────────────────────── */
 
-.builder-button-row { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(180px, 2fr); gap: 8px; align-items: center; margin-top: 4px; }
+.builder-button-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 4px;
+  min-width: 0;
+}
+.builder-button-row > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.builder-button input,
+.builder-button select { width: 100%; min-width: 0; box-sizing: border-box; }
 .builder-note { color: rgba(247, 237, 255, 0.55); font-size: 0.8rem; padding: 0 6px; }
 
 /* ─── Rich preview ────────────────────────────────────────────────────── */
 
+/* Match Telegram's actual message text weight — the app's global weight
+   reads as "everything is bold" without this explicit reset. */
+.tg-rich, .tg-rich-p, .tg-rich-footer, .tg-rich-bq, .tg-rich-pullquote, .tg-rich-list, .tg-rich-details {
+  font-weight: 400;
+}
 .tg-rich { display: grid; gap: 6px; color: #fff; }
-.tg-rich-h { margin: 4px 0; color: #fff; font-weight: 900; }
+.tg-rich-h { margin: 6px 0 2px; color: #fff; font-weight: 700; line-height: 1.25; }
+.tg-rich-h + .tg-rich-p, .tg-rich-p + .tg-rich-p { margin-top: 4px; }
 .tg-rich-p { margin: 0; line-height: 1.4; }
+.tg-rich-p b, .tg-rich-p strong { font-weight: 700; }
+.tg-rich-p i, .tg-rich-p em { font-style: italic; }
 .tg-rich-pre { margin: 0; padding: 8px 10px; background: rgba(0,0,0,0.4); border-radius: 8px; overflow-x: auto; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.86rem; }
 .tg-rich-footer { color: rgba(247,237,255,0.6); font-size: 0.82rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; }
 .tg-rich-hr {
@@ -717,4 +748,34 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
   resize: vertical;
+}
+
+/* ─── Containment: keep every editor card's contents inside its walls ── */
+
+.builder-card,
+.editor-card,
+.preview-card,
+.mode-toggle-card,
+.rich-media-card {
+  overflow: hidden;
+  min-width: 0;
+}
+.builder-card *,
+.editor-card * {
+  min-width: 0;
+  max-width: 100%;
+}
+.rich-button-builder,
+.button-builder,
+.rich-button-list,
+.button-rows,
+.rich-button-row,
+.builder-row,
+.builder-button {
+  min-width: 0;
+  max-width: 100%;
+}
+.tg-rich, .tg-preview .tgme_widget_message_text {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

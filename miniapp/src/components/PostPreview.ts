@@ -338,11 +338,31 @@ function renderCaption(caption?: RichBlockCaption): string {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatText(text: string): string {
-  // Block text is plain, but people write markdown-style inline formatting
-  // in there (**bold**, *italic*, ~strike~, `code`, ||spoiler||), so we
-  // render those the way you'd expect and keep line breaks.
-  const escaped = escapeHtml(text);
-  return applyInlineFormatting(escaped).replace(/\n/g, '<br/>');
+  // Block text is plain but supports inline markdown wraps (**bold**,
+  // *italic*, ~strike~, `code`, ||spoiler||) plus `>`-prefixed lines that
+  // render as Telegram-style quote blocks (colored left bar, no visible >).
+  const lines = text.split('\n');
+  const out: string[] = [];
+  let quoteBuffer: string[] = [];
+  const flushQuote = () => {
+    if (quoteBuffer.length === 0) return;
+    const inner = quoteBuffer
+      .map((l) => applyInlineFormatting(escapeHtml(l)))
+      .join('<br/>');
+    out.push(`<blockquote class="tg-rich-bq">${inner}</blockquote>`);
+    quoteBuffer = [];
+  };
+  for (const raw of lines) {
+    const quoteMatch = /^\s*>\s?(.*)$/.exec(raw);
+    if (quoteMatch) {
+      quoteBuffer.push(quoteMatch[1]);
+    } else {
+      flushQuote();
+      out.push(applyInlineFormatting(escapeHtml(raw)));
+    }
+  }
+  flushQuote();
+  return out.join('<br/>');
 }
 
 /**
