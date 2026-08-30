@@ -77,7 +77,9 @@ export function createPayload(state: EditorState, status: PostPayload['status'])
 }
 
 export function PostEditorPage(state: EditorState): string {
-  const selectedChannel = state.channels.find((channel) => channel.id === state.channelId);
+  // Dropdown shows the friendly name; the value we store is the Telegram
+  // numeric chat id, so the payload can talk to Telegram straight through.
+  const selectedChannel = state.channels.find((channel) => channel.telegramChatId === state.channelId);
 
   return `
     <button class="back-button" data-page="dashboard" type="button" aria-label="Back to home">
@@ -96,7 +98,7 @@ export function PostEditorPage(state: EditorState): string {
           <select id="channel-id" class="input editor-channel-select">
             <option value="">Loading bot channels...</option>
             ${state.channels
-              .map((channel) => `<option value="${channel.id}" ${channel.id === state.channelId ? 'selected' : ''}>${escapeAttr(channel.name)}</option>`)
+              .map((channel) => `<option value="${channel.telegramChatId}" ${channel.telegramChatId === state.channelId ? 'selected' : ''}>${escapeAttr(channel.name)}</option>`)
               .join('')}
           </select>
           <span class="editor-channel-select-icon" aria-hidden="true">⌄</span>
@@ -197,6 +199,7 @@ function richHtmlPane(state: EditorState): string {
 function richMarkdownPane(state: EditorState): string {
   return `
     <label class="field-label">Markdown Body</label>
+    ${RichTextToolbar()}
     <textarea id="rich-markdown" class="editor-textarea rich-textarea" placeholder="# Headline&#10;&#10;Write your rich message in Markdown.&#10;&#10;Media: ![hero](tg://photo?id=hero)">${escapeText(state.richMarkdown)}</textarea>
   `;
 }

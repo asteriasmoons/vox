@@ -1,9 +1,11 @@
 export type ParseMode = 'HTML';
 export type PostStatus = 'draft' | 'scheduled' | 'posted';
 
-// ─── Regular post inline buttons (reply_markup, extended in Bot API 10.3) ─────
-// Backward-compatible with the previous {text, url} shape: `url` and
-// `kind: 'url'` remain the defaults so pre-rich drafts still deserialize.
+// ─── Inline buttons for regular posts ─────────────────────────────────────────
+// These are the keyboard buttons attached under a message. Every button has
+// text and one action — a link to open, some data to send back to the bot,
+// a mini app to launch, and so on. Old drafts only knew about URL buttons,
+// so we keep `url` around and default `kind` to `'url'` when it's missing.
 
 export type InlineButtonKind =
   | 'url'
@@ -17,7 +19,7 @@ export type InlineButtonKind =
 
 export interface InlineButton {
   text: string;
-  /** Legacy URL — retained so pre-rich drafts still deserialize. */
+  /** Old shape — kept so older drafts still load. */
   url: string;
   kind?: InlineButtonKind;
   callbackData?: string;
@@ -30,8 +32,10 @@ export interface InlineButton {
 
 export type InlineButtonRows = InlineButton[][];
 
-// ─── InputMedia* (Bot API) ────────────────────────────────────────────────────
-// The subset of fields the editor exposes and the send layer forwards.
+// ─── Media (photos, videos, files, audio, GIFs, voice notes) ─────────────────
+// Anything the message attaches gets described here. The editor lets you
+// edit the common fields; the rest are optional and forwarded as-is when
+// they're set.
 
 export interface InputMediaCommon {
   /** file_id, HTTP(S) URL, or attach://<name>. */
@@ -94,14 +98,18 @@ export type InputMedia =
   | InputMediaDocument
   | InputMediaVoiceNote;
 
-// ─── Rich Message (Bot API 10.3) ──────────────────────────────────────────────
+// ─── Rich messages ───────────────────────────────────────────────────────────
+// A rich message is a fancier message than a plain one — it can have headings,
+// lists, tables, photo/video/audio blocks, quotes, buttons inside the body,
+// and more. Write one three ways: raw HTML, Markdown, or a list of blocks.
 
 export type RichFlavor = 'html' | 'markdown' | 'blocks';
 export type RichButtonStyle = 'danger' | 'success' | 'primary' | 'link';
 
 /**
- * Mirrors Telegram's RichMessageButton. `text` here is a plain string in the
- * editor; the send layer wraps it as RichText.
+ * A button that lives inside a rich-message body (not in the reply keyboard).
+ * The editor treats `text` as plain text; the send layer wraps it in
+ * whatever Telegram wants when it goes out.
  */
 export interface RichMessageButton {
   text: string;
@@ -125,9 +133,8 @@ export interface RichMessageButton {
 }
 
 /**
- * Caption of a rich formatted block (Telegram RichBlockCaption).
- * `text` is a plain string in the editor; the send layer promotes it to
- * RichText. `credit` corresponds to <cite>.
+ * Caption for a media / collage / slideshow / map block.
+ * `text` is the caption itself; `credit` is a smaller by-line underneath.
  */
 export interface RichBlockCaption {
   text: string;
@@ -135,9 +142,8 @@ export interface RichBlockCaption {
 }
 
 /**
- * Cell in a RichBlockTable. Mirrors Telegram's RichBlockTableCell:
- * optional text (omitted cell = invisible), header flag, colspan, rowspan,
- * horizontal and vertical alignment.
+ * A single cell in a rich table. Leave `text` off to get an empty
+ * (invisible) cell. Everything else is standard table-cell stuff.
  */
 export interface RichBlockTableCell {
   text?: string;
@@ -149,9 +155,9 @@ export interface RichBlockTableCell {
 }
 
 /**
- * Item of a rich list. Mirrors Telegram's InputRichBlockListItem:
- * blocks (content), optional checkbox state, optional ordered-list numeric
- * value and label type ('a' | 'A' | 'i' | 'I' | '1').
+ * One item inside a rich list. The content is any nested blocks. A list
+ * item can optionally show a checkbox and, for ordered lists, override its
+ * number or use letters/roman numerals.
  */
 export interface RichListItem {
   blocks: RichBlock[];
@@ -162,10 +168,9 @@ export interface RichListItem {
 }
 
 /**
- * Media element referenced from html/markdown flavors via
- *   tg://photo?id=… / tg://video?id=… / tg://document?id=… / tg://audio?id=…
- * `id` is 1–64 chars, [A-Za-z0-9_-]. The `media` field holds the full
- * InputMedia so each reference carries its own caption/spoiler/etc.
+ * A piece of media the HTML or Markdown body refers to by id. Give it a
+ * short id (letters/numbers/underscore/dash), then drop it in the body as
+ * `tg://photo?id=<id>` or `tg://video?id=<id>` and so on.
  */
 export interface RichMediaRef {
   id: string;
@@ -173,9 +178,8 @@ export interface RichMediaRef {
 }
 
 /**
- * Discriminated union of every InputRichBlock* type. `type` matches the string
- * Telegram expects on the wire, exposed 1:1 (e.g. 'pre' for preformatted,
- * 'voice_note' for voice notes, 'mathematical_expression' for math).
+ * Every kind of block a rich message can contain. `type` names the shape;
+ * the other fields are the block's content.
  */
 export type RichBlock =
   | { type: 'paragraph'; text: string }

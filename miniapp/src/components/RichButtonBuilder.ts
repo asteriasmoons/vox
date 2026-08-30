@@ -1,12 +1,10 @@
 import type { RichMessageButton, RichButtonStyle } from '../types/post';
 
 /**
- * Builder for RichMessageButtons — the buttons inside an
- * InputRichBlockButtons block. Bot API 10.3 rich buttons support:
- *  - style: danger | success | primary | link  (link only for callback buttons)
- *  - kind:  url | callback_data | web_app | login_url |
- *           switch_inline_query | switch_inline_query_current_chat |
- *           copy_text | pay
+ * Builder for the buttons that live inside a rich message's Buttons block.
+ * Each button has a style (primary / success / danger / link) and a kind
+ * (URL, callback, web app, login, switch-inline, copy-text, or pay).
+ * "link" style only works on callback buttons.
  */
 
 const KIND_LABELS: Record<RichMessageButton['kind'], string> = {

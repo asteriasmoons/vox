@@ -1,7 +1,10 @@
 export type ParseMode = 'HTML';
 export type PostStatus = 'draft' | 'scheduled' | 'posted';
 
-// ─── Regular post inline buttons (reply_markup, extended in Bot API 10.3) ─────
+// ─── Inline buttons for regular posts ─────────────────────────────────────────
+// The keyboard buttons attached under a message. Every button has text and
+// one action — a link, callback data, a mini app, etc. Old drafts only knew
+// URL buttons, so `url` stays around and `kind` defaults to 'url' when missing.
 
 export type InlineButtonKind =
   | 'url'
@@ -15,7 +18,7 @@ export type InlineButtonKind =
 
 export interface InlineButton {
   text: string;
-  /** Legacy URL — retained so pre-rich drafts still deserialize. */
+  /** Old shape — kept so older drafts still load. */
   url: string;
   kind?: InlineButtonKind;
   callbackData?: string;
@@ -28,7 +31,9 @@ export interface InlineButton {
 
 export type InlineButtonRows = InlineButton[][];
 
-// ─── InputMedia* (Bot API subset the editor edits + send layer forwards) ─────
+// ─── Media (photos, videos, files, audio, GIFs, voice notes) ─────────────────
+// Everything the message can attach. The editor exposes the common fields;
+// the rest are optional and passed through when they're set.
 
 export interface InputMediaCommon {
   media: string;
@@ -83,7 +88,10 @@ export type InputMedia =
   | InputMediaDocument
   | InputMediaVoiceNote;
 
-// ─── Rich Message (Bot API 10.3) ──────────────────────────────────────────────
+// ─── Rich messages ───────────────────────────────────────────────────────────
+// A fancier message than a plain one — headings, lists, tables, media blocks,
+// quotes, buttons inside the body, and so on. Written three ways: raw HTML,
+// Markdown, or a list of blocks.
 
 export type RichFlavor = 'html' | 'markdown' | 'blocks';
 export type RichButtonStyle = 'danger' | 'success' | 'primary' | 'link';

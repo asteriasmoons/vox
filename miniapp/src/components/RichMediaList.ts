@@ -1,11 +1,10 @@
 import type { InputMedia, RichMediaRef } from '../types/post';
 
 /**
- * Media reference list for html/markdown rich-message flavors.
- * Rich-message html/markdown fields reference media using
- *   tg://photo?id=<id>, tg://video?id=<id>, tg://document?id=<id>, tg://audio?id=<id>.
- * Each entry pairs the id with the full InputMedia so the send layer can
- * upload / cite it. Bot API allows up to 50 media items per rich message.
+ * The media library shown alongside the HTML and Markdown editors. Add a
+ * photo / video / document / audio here, give it a short id, then reference
+ * it from the body as tg://photo?id=<id> (or tg://video, tg://document,
+ * tg://audio). A message can carry up to 50 media items.
  */
 
 const MEDIA_TYPE_OPTIONS: InputMedia['type'][] = ['photo', 'video', 'animation', 'audio', 'document', 'voice_note'];
@@ -20,9 +19,9 @@ const TYPE_LABELS: Record<InputMedia['type'], string> = {
 };
 
 /**
- * Which tg:// scheme wraps each media type in html/markdown.
- * Telegram accepts tg://photo, tg://video, tg://document, tg://audio;
- * animation → tg://video, voice_note → tg://audio (Telegram treats them as such).
+ * Which tg:// URL to use for each media type. Photos, videos, documents and
+ * audio each have their own scheme; animations use the video scheme and voice
+ * notes use the audio scheme (that's how Telegram groups them).
  */
 const SCHEME_FOR_TYPE: Record<InputMedia['type'], 'photo' | 'video' | 'document' | 'audio'> = {
   photo: 'photo',

@@ -9,18 +9,14 @@ import type {
 import { RichButtonBuilder } from './RichButtonBuilder';
 
 /**
- * Editor for InputRichMessage.blocks. Renders every one of the 24
- * InputRichBlock* types listed in Bot API 10.3. Nested-blocks types
- * (blockquote, details, collage, slideshow, list items) recurse into
- * this same builder with an extended block path.
+ * Visual builder for the Blocks flavor of a rich message. Every block type
+ * a rich message supports gets its own little editor here. Blocks that hold
+ * other blocks (quote, details, collage, slideshow, list items) render this
+ * builder again inside themselves.
  *
- * Every input carries `data-block-path` (the location in the blocks tree) so
- * the router can address it without re-walking the DOM.
- *
- * Path grammar (slash-delimited):
- *   "3"                  → blocks[3]
- *   "3/blocks/1"         → blocks[3].blocks[1]              (blockquote/details/collage/slideshow)
- *   "3/items/2/blocks/0" → blocks[3].items[2].blocks[0]     (list item)
+ * Each input gets a `data-block-path` attribute that tells the wiring code
+ * where the block lives in the tree — e.g. "3" is the fourth top-level
+ * block, "3/blocks/1" is the second child of that block, etc.
  */
 
 export const ALL_BLOCK_TYPES: RichBlock['type'][] = [

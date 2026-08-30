@@ -19,15 +19,14 @@ interface PostPreviewOptions {
 }
 
 /**
- * Renders a Telegram-message-shaped preview.
+ * Draws a preview shaped like a real Telegram message.
  *
- * Regular mode: existing behavior — `text` is treated as Telegram HTML
- * parse-mode markup and injected into a message bubble; reply-keyboard
- * buttons render below.
+ * In Regular mode `text` is treated as Telegram HTML and dropped straight
+ * into a bubble; the reply-keyboard buttons show below.
  *
- * Rich mode: builds a best-effort visual of the InputRichMessage. HTML
- * flavor injects the html verbatim (media refs get inline placeholders);
- * Markdown runs a small subset converter; Blocks walks the tree.
+ * In Rich mode we do our best to render what you're building: HTML goes in
+ * as-is (with media references swapped for inline thumbs), Markdown runs
+ * through a small converter, and Blocks walks the tree and draws each block.
  */
 export function PostPreview(text: string, buttons: InlineButtonRows, options: PostPreviewOptions = {}): string {
   const channelName = options.channelName?.trim() || 'Vox Testing';

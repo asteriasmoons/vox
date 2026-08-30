@@ -499,3 +499,145 @@
 .tg-md-ul, .tg-md-ol { padding-left: 22px; margin: 4px 0; }
 .tg-missing-media { color: #ffb74d; }
 .muted { color: rgba(247, 237, 255, 0.55); font-size: 0.82rem; }
+
+/* ─── Custom selects — kill the native chevron everywhere in the editor ── */
+
+.rich-block-add select,
+.rich-block select,
+.rich-button-row select,
+.rich-media-item select,
+.rich-media-item .input,
+.rich-message-options select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px;
+  padding: 8px 40px 8px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l6 6 6-6'/></svg>") no-repeat right 14px center,
+    linear-gradient(145deg, rgba(42, 33, 56, 0.96), rgba(24, 16, 39, 0.96));
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.rich-block-add select { min-width: 200px; }
+
+.rich-block-add {
+  gap: 10px;
+  padding: 4px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.28), rgba(128, 0, 254, 0.28), rgba(0, 219, 255, 0.28));
+}
+.rich-block-add select { border: 0; background-color: rgba(24, 16, 39, 0.94); }
+.rich-block-add button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 0;
+  color: #fff;
+  font-weight: 900;
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.9), rgba(128, 0, 254, 0.9), rgba(0, 219, 255, 0.9));
+  cursor: pointer;
+}
+
+/* ─── Custom checkboxes — pill toggles ─────────────────────────────────── */
+
+.rich-message-options label,
+.rich-media-flags label,
+.rich-list-item-meta label,
+.rich-cell-meta label,
+.rich-block-inline label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rich-message-options input[type="checkbox"],
+.rich-media-flags input[type="checkbox"],
+.rich-list-item-meta input[type="checkbox"],
+.rich-block-inline input[type="checkbox"],
+.rich-cell-meta input[type="checkbox"],
+.rich-media-advanced input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0;
+}
+.rich-message-options input[type="checkbox"]::after,
+.rich-media-flags input[type="checkbox"]::after,
+.rich-list-item-meta input[type="checkbox"]::after,
+.rich-block-inline input[type="checkbox"]::after,
+.rich-cell-meta input[type="checkbox"]::after,
+.rich-media-advanced input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.rich-message-options input[type="checkbox"]:checked,
+.rich-media-flags input[type="checkbox"]:checked,
+.rich-list-item-meta input[type="checkbox"]:checked,
+.rich-block-inline input[type="checkbox"]:checked,
+.rich-cell-meta input[type="checkbox"]:checked,
+.rich-media-advanced input[type="checkbox"]:checked {
+  background: linear-gradient(135deg, rgba(224, 25, 212, 0.9), rgba(128, 0, 254, 0.9), rgba(0, 219, 255, 0.9));
+  border-color: transparent;
+}
+.rich-message-options input[type="checkbox"]:checked::after,
+.rich-media-flags input[type="checkbox"]:checked::after,
+.rich-list-item-meta input[type="checkbox"]:checked::after,
+.rich-block-inline input[type="checkbox"]:checked::after,
+.rich-cell-meta input[type="checkbox"]:checked::after,
+.rich-media-advanced input[type="checkbox"]:checked::after {
+  transform: translateX(18px);
+}
+
+/* ─── Button-builder kind select — matches the block-picker style ─────── */
+
+.builder-button-row select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px;
+  padding: 8px 40px 8px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l6 6 6-6'/></svg>") no-repeat right 14px center,
+    linear-gradient(145deg, rgba(42, 33, 56, 0.96), rgba(24, 16, 39, 0.96));
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ─── List item / cell selects — a compact variant ────────────────────── */
+
+.rich-list-item-meta select,
+.rich-cell-meta select {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 32px;
+  padding: 4px 26px 4px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 14 9'><path fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l6 6 6-6'/></svg>") no-repeat right 8px center,
+    rgba(0, 0, 0, 0.28);
+  color: #fff;
+  font-size: 0.78rem;
+}

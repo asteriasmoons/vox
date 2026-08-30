@@ -59,6 +59,16 @@ export async function getChannelById(channelId: string): Promise<Channel | undef
   return channels.find((channel) => channel.id === channelId);
 }
 
+/**
+ * Find a channel by its Telegram chat id — that's what the editor sends
+ * with each post, so this is how the publish path looks a channel up.
+ */
+export async function getChannelByTelegramChatId(telegramChatId: string): Promise<Channel | undefined> {
+  const channels = await getChannels();
+  const needle = String(telegramChatId);
+  return channels.find((channel) => String(channel.telegramChatId) === needle);
+}
+
 export async function getChannelPhotoFileId(channelId: string): Promise<string | undefined> {
   const channels = await getChannels();
   const channel = channels.find((item) => item.id === channelId);

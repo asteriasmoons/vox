@@ -1,9 +1,9 @@
 import type { InlineButton, InlineButtonKind, InlineButtonRows } from '../types/post';
 
 /**
- * reply_markup keyboard builder. Bot API 10.3 accepts these button kinds on
- * inline keyboards: url, callback_data, web_app, login_url,
- * switch_inline_query, switch_inline_query_current_chat, copy_text, pay.
+ * Builder for the row of buttons attached below the message. Each button
+ * can be a URL, a callback the bot handles, a mini app launch, a login
+ * link, a switch-inline, a copy-text, or a Pay button.
  */
 const KIND_LABELS: Record<InlineButtonKind, string> = {
   url: 'URL',

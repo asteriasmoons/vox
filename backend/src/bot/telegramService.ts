@@ -11,17 +11,19 @@ import type {
   RichMessage,
   RichMessageButton
 } from '../types/post.js';
-import { getChannelById } from '../services/channelService.js';
+import { getChannelByTelegramChatId } from '../services/channelService.js';
 import { getTelegramClient } from './telegramClient.js';
 import { requireTelegramToken } from '../utils/env.js';
 
-// ─── Public API ───────────────────────────────────────────────────────────────
+// ─── Entry point ─────────────────────────────────────────────────────────────
 
 export async function publishPostToTelegram(post: PostPayload): Promise<number> {
-  const channel = await getChannelById(post.channelId);
+  // The payload carries the Telegram chat id directly (the editor shows
+  // the friendly name but stores the number).
+  const channel = await getChannelByTelegramChatId(post.channelId);
 
   if (!channel) {
-    throw new Error(`Channel not found for id: ${post.channelId}`);
+    throw new Error(`Channel not found for Telegram chat id: ${post.channelId}`);
   }
 
   if (!channel.telegramChatId || !channel.botCanAccess) {
@@ -36,13 +38,13 @@ export async function publishPostToTelegram(post: PostPayload): Promise<number> 
   return sendRegularMessage(chatId, post);
 }
 
-// ─── Regular sendMessage path (unchanged behaviour) ───────────────────────────
+// ─── Regular posts: the plain sendMessage path ────────────────────────────────
 
 async function sendRegularMessage(chatId: number, post: PostPayload): Promise<number> {
   const bot = getTelegramClient();
-  // Cast the options: node-telegram-bot-api's InlineKeyboardButton predates
-  // Bot API 10.3 and doesn't type callback_data / web_app / login_url / etc.
-  // loosely enough. toReplyMarkup already emits shapes Telegram accepts.
+  // The library's types were written before Telegram added the newer button
+  // kinds, so its inline-keyboard type is too narrow. We build the right
+  // shape ourselves in toReplyMarkup and cast past the strict type here.
   const message = await bot.sendMessage(chatId, post.text, {
     parse_mode: post.parseMode,
     reply_markup: toReplyMarkup(post.buttons),
@@ -51,7 +53,7 @@ async function sendRegularMessage(chatId: number, post: PostPayload): Promise<nu
   return message.message_id;
 }
 
-// ─── Rich sendRichMessage path (Bot API 10.3) ─────────────────────────────────
+// ─── Rich messages: fancy-formatted posts with blocks and media ──────────────
 
 async function sendRichMessage(chatId: number, rich: RichMessage, buttons: InlineButtonRows): Promise<number> {
   const body: Record<string, unknown> = {
@@ -84,7 +86,7 @@ async function callBotApi(method: string, body: Record<string, unknown>): Promis
   return json;
 }
 
-// ─── InputRichMessage builder (frontend camelCase → Bot API snake_case) ───────
+// ─── Turn the editor's camelCase state into what Telegram expects ────────────
 
 function toInputRichMessage(rich: RichMessage): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -296,14 +298,14 @@ function toRichMessageButton(button: RichMessageButton): Record<string, unknown>
 }
 
 /**
- * Telegram's RichText is either a plain string, an array of RichText, or
- * a typed object. The editor keeps plain strings, which are valid RichText.
+ * The editor keeps text as plain strings, which is one of the valid
+ * shapes Telegram accepts, so there's nothing to convert.
  */
 function toRichText(text: string): string {
   return text ?? '';
 }
 
-// ─── reply_markup (used by both modes) ────────────────────────────────────────
+// ─── The reply keyboard under the message (both modes use this) ─────────────
 
 function toReplyMarkup(buttons: InlineButtonRows) {
   const inlineKeyboard = buttons

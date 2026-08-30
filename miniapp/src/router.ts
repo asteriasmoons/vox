@@ -868,12 +868,12 @@ function bindTemplateActions(container: Element, allTemplates: Template[]): void
   });
 }
 
-// ─── Editor Binding (Regular + Rich Message) ───────────────────────────────────
+// ─── Wire up the editor (Regular + Rich Message) ─────────────────────────────
 
 function bindEditor(): void {
   const titleInput = qs<HTMLInputElement>('#post-title');
   const channelSelect = qs<HTMLSelectElement>('#channel-id');
-  // Regular-mode textarea only exists when state.editor.mode === 'regular'.
+  // Only present when we're in Regular mode.
   const textarea = document.getElementById('post-text') as HTMLTextAreaElement | null;
 
   if (textarea) textarea.value = state.editor.text;
@@ -959,7 +959,7 @@ function bindEditor(): void {
   bindScheduleSheet(titleInput, channelSelect, textarea);
 }
 
-// ─── Mode + Flavor tabs ────────────────────────────────────────────────────────
+// ─── Regular ↔ Rich tabs, and the HTML/Markdown/Blocks sub-tabs ──────────────
 
 function bindModeAndFlavor(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-post-mode]').forEach((tab) => {
@@ -980,7 +980,7 @@ function bindModeAndFlavor(): void {
   });
 }
 
-// ─── Rich HTML / Markdown panes ────────────────────────────────────────────────
+// ─── HTML and Markdown editing panes ─────────────────────────────────────────
 
 function bindRichHtmlPane(): void {
   const ta = document.getElementById('rich-html') as HTMLTextAreaElement | null;
@@ -1007,6 +1007,32 @@ function bindRichMarkdownPane(): void {
     state.editor.richMarkdown = ta.value;
     refreshPreview();
   });
+  // Wire the toolbar buttons that live above the markdown textarea to
+  // markdown-flavoured wraps (**bold**, *italic*, ~strike~, `code`, etc.).
+  document.querySelectorAll<HTMLButtonElement>('.rich-flavor-body [data-format]').forEach((button) => {
+    // Skip anything already wired by the HTML pane; both panes share the
+    // same query but only one exists at a time (the flavor tab that's open).
+    if (!document.getElementById('rich-markdown')) return;
+    button.addEventListener('click', () => {
+      state.editor.richMarkdown = applyMarkdownFormat(button.dataset.format, ta);
+      refreshPreview();
+    });
+  });
+}
+
+function applyMarkdownFormat(action: string | undefined, textarea: HTMLTextAreaElement): string {
+  switch (action) {
+    case 'bold': return wrapSelection(textarea, '**', '**');
+    case 'italic': return wrapSelection(textarea, '*', '*');
+    // Markdown has no underline — Telegram accepts inline HTML so use <u>.
+    case 'underline': return wrapSelection(textarea, '<u>', '</u>');
+    case 'strike': return wrapSelection(textarea, '~', '~');
+    case 'code': return wrapSelection(textarea, '`', '`');
+    case 'quote': return insertAtCursor(textarea, '\n> Quote text\n');
+    case 'spoiler': return wrapSelection(textarea, '||', '||');
+    case 'divider': return insertAtCursor(textarea, '\n---\n');
+    default: return textarea.value;
+  }
 }
 
 function bindRichMessageOptions(): void {
@@ -1016,7 +1042,7 @@ function bindRichMessageOptions(): void {
   if (skip) skip.addEventListener('change', () => { state.editor.richSkipEntityDetection = skip.checked; refreshPreview(); });
 }
 
-// ─── Rich media list (html/markdown flavors) ───────────────────────────────────
+// ─── Media library (used by the HTML and Markdown flavors) ──────────────────
 
 function bindRichMediaList(): void {
   const addBtn = document.querySelector<HTMLButtonElement>('[data-rich-media-add]');
@@ -1070,7 +1096,7 @@ function bindRichMediaList(): void {
   });
 }
 
-// ─── Rich block builder ───────────────────────────────────────────────────────
+// ─── Blocks editor (the visual builder for the Blocks flavor) ───────────────
 
 function bindRichBlockBuilder(): void {
   // Add-block buttons (present in root + every nested scope).
@@ -1283,7 +1309,7 @@ function bindRichBlockBuilder(): void {
   });
 }
 
-// ─── Block-tree helpers ────────────────────────────────────────────────────────
+// ─── Helpers for navigating the tree of nested blocks ───────────────────────
 
 function getBlockAtPath(path: string): RichBlock | null {
   const loc = walkPath(state.editor.richBlocks, path);
@@ -1433,15 +1459,16 @@ async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<
       return;
     }
 
-    if (!state.editor.channels.some((channel) => channel.id === state.editor.channelId)) {
-      state.editor.channelId = state.editor.channels.find((channel) => channel.isDefault)?.id || state.editor.channels[0]?.id || '';
+    // Dropdown shows names; the value we track is the Telegram chat id.
+    if (!state.editor.channels.some((channel) => channel.telegramChatId === state.editor.channelId)) {
+      state.editor.channelId = state.editor.channels.find((channel) => channel.isDefault)?.telegramChatId || state.editor.channels[0]?.telegramChatId || '';
     }
 
     channelSelect.disabled = false;
     channelSelect.innerHTML = [
       '<option value="">Choose a bot channel</option>',
       ...state.editor.channels.map(
-        (channel) => `<option value="${channel.id}" ${channel.id === state.editor.channelId ? 'selected' : ''}>${channel.name}${channel.username ? ` · @${channel.username}` : ''}${canPublishToChannel(channel) ? '' : ' · needs access'}</option>`
+        (channel) => `<option value="${channel.telegramChatId}" ${channel.telegramChatId === state.editor.channelId ? 'selected' : ''}>${channel.name}${canPublishToChannel(channel) ? '' : ' · needs access'}</option>`
       )
     ].join('');
     channelSelect.value = state.editor.channelId;
@@ -1457,7 +1484,7 @@ async function hydrateEditorChannels(channelSelect: HTMLSelectElement): Promise<
 }
 
 function getSelectedEditorChannel(): Channel | undefined {
-  return state.editor.channels.find((channel) => channel.id === state.editor.channelId);
+  return state.editor.channels.find((channel) => channel.telegramChatId === state.editor.channelId);
 }
 
 function canPublishToChannel(channel: Channel): boolean {
