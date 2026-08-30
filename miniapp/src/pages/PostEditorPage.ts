@@ -207,6 +207,17 @@ function richMarkdownPane(state: EditorState): string {
 function richBlocksPane(state: EditorState): string {
   return `
     <label class="field-label">Blocks</label>
+    <div class="rich-blocks-toolbar-wrap">
+      <p class="rich-blocks-toolbar-hint">Click into a block's text, then use the toolbar to format it.</p>
+      <div id="rich-blocks-toolbar" class="toolbar">
+        <button type="button" data-blocks-format="bold">B</button>
+        <button type="button" data-blocks-format="italic">I</button>
+        <button type="button" data-blocks-format="underline">U</button>
+        <button type="button" data-blocks-format="strike">S</button>
+        <button type="button" data-blocks-format="code">{}</button>
+        <button type="button" data-blocks-format="spoiler">Spoiler</button>
+      </div>
+    </div>
     ${RichBlockBuilder(state.richBlocks)}
   `;
 }

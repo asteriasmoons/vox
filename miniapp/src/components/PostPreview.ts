@@ -58,11 +58,6 @@ export function PostPreview(text: string, buttons: InlineButtonRows, options: Po
               <span class="tgme_widget_message_owner_name" dir="auto">${escapeHtml(channelName)}</span>
             </div>
             <div class="tgme_widget_message_text js-message_text" dir="auto">${bodyHtml}</div>
-            <div class="tgme_widget_message_footer compact js-message_footer">
-              <div class="tgme_widget_message_info short js-message_info">
-                <span class="tgme_widget_message_views">1</span>
-              </div>
-            </div>
           </div>
           ${hasKeyboard ? renderKeyboard(buttons) : ''}
         </div>
@@ -231,7 +226,7 @@ function renderRichBlocks(blocks: RichBlock[]): string {
 function renderBlock(block: RichBlock): string {
   switch (block.type) {
     case 'paragraph': return `<p class="tg-rich-p">${formatText(block.text)}</p>`;
-    case 'heading': return `<h${block.size} class="tg-rich-h">${escapeHtml(block.text)}</h${block.size}>`;
+    case 'heading': return `<h${block.size} class="tg-rich-h">${applyInlineFormatting(escapeHtml(block.text))}</h${block.size}>`;
     case 'pre': return `<pre class="tg-rich-pre${block.language ? ` lang-${escapeAttr(block.language)}` : ''}"><code>${escapeHtml(block.text)}</code></pre>`;
     case 'footer': return `<footer class="tg-rich-footer">${formatText(block.text)}</footer>`;
     case 'divider': return `<hr class="tg-rich-hr" />`;
@@ -338,8 +333,24 @@ function renderCaption(caption?: RichBlockCaption): string {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatText(text: string): string {
-  // Blocks' text fields are plain — no HTML — but we do turn line breaks into <br/>.
-  return escapeHtml(text).replace(/\n/g, '<br/>');
+  // Block text is plain, but people write markdown-style inline formatting
+  // in there (**bold**, *italic*, ~strike~, `code`, ||spoiler||), so we
+  // render those the way you'd expect and keep line breaks.
+  const escaped = escapeHtml(text);
+  return applyInlineFormatting(escaped).replace(/\n/g, '<br/>');
+}
+
+/**
+ * Turn markdown-style inline wraps in an already-escaped string into HTML.
+ * Runs bold before italic so `**text**` doesn't get eaten as italic.
+ */
+function applyInlineFormatting(escaped: string): string {
+  return escaped
+    .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
+    .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<i>$1</i>')
+    .replace(/~([^~\n]+)~/g, '<s>$1</s>')
+    .replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\|\|([^\n]+?)\|\|/g, '<tg-spoiler>$1</tg-spoiler>');
 }
 
 function normalizeTelegramText(text: string): string {

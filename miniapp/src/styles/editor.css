@@ -455,7 +455,13 @@
 .tg-rich-p { margin: 0; line-height: 1.4; }
 .tg-rich-pre { margin: 0; padding: 8px 10px; background: rgba(0,0,0,0.4); border-radius: 8px; overflow-x: auto; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.86rem; }
 .tg-rich-footer { color: rgba(247,237,255,0.6); font-size: 0.82rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 6px; }
-.tg-rich-hr { border: 0; border-top: 1px solid rgba(255,255,255,0.15); }
+.tg-rich-hr {
+  border: 0;
+  height: 2px;
+  margin: 10px 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 219, 255, 0.6), rgba(128, 0, 254, 0.6), rgba(224, 25, 212, 0.6), transparent);
+  border-radius: 2px;
+}
 .tg-rich-bq { margin: 4px 0; padding: 6px 10px; border-left: 3px solid #00dbff; background: rgba(0, 219, 255, 0.08); border-radius: 0 8px 8px 0; }
 .tg-rich-bq-expandable { border-left-color: #e019d4; }
 .tg-rich-pullquote { margin: 8px auto; padding: 8px 12px; text-align: center; font-style: italic; color: rgba(247,237,255,0.85); }
@@ -639,5 +645,20 @@
     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 14 9'><path fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l6 6 6-6'/></svg>") no-repeat right 8px center,
     rgba(0, 0, 0, 0.28);
   color: #fff;
+  font-size: 0.78rem;
+}
+
+/* ─── Blocks flavor sticky formatting toolbar ─────────────────────────── */
+
+.rich-blocks-toolbar-wrap {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.rich-blocks-toolbar-hint {
+  margin: 0 0 8px 4px;
+  color: rgba(247, 237, 255, 0.55);
   font-size: 0.78rem;
 }

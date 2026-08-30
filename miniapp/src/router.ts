@@ -909,6 +909,7 @@ function bindEditor(): void {
   bindRichMarkdownPane();
   bindRichMediaList();
   bindRichBlockBuilder();
+  bindRichBlocksToolbar();
   bindRichMessageOptions();
   bindButtonBuilder();
   void hydrateEditorChannels(channelSelect);
@@ -1040,6 +1041,53 @@ function bindRichMessageOptions(): void {
   const skip = document.getElementById('rich-skip-entity-detection') as HTMLInputElement | null;
   if (rtl) rtl.addEventListener('change', () => { state.editor.richIsRtl = rtl.checked; refreshPreview(); });
   if (skip) skip.addEventListener('change', () => { state.editor.richSkipEntityDetection = skip.checked; refreshPreview(); });
+}
+
+// Toolbar for the Blocks pane. Bold/italic/etc. buttons apply markdown-style
+// wraps (**bold**, *italic*, ~strike~, `code`, ||spoiler||) to whichever
+// block textarea the user last had focused. That way one toolbar covers
+// every block that takes text without cluttering each block header.
+function bindRichBlocksToolbar(): void {
+  const toolbar = document.getElementById('rich-blocks-toolbar');
+  if (!toolbar) return;
+
+  let lastFocused: HTMLTextAreaElement | null = null;
+  document.querySelectorAll<HTMLTextAreaElement>('.rich-block textarea').forEach((ta) => {
+    ta.addEventListener('focus', () => { lastFocused = ta; });
+  });
+
+  toolbar.querySelectorAll<HTMLButtonElement>('[data-blocks-format]').forEach((btn) => {
+    btn.addEventListener('mousedown', (e) => e.preventDefault()); // keep focus on the textarea
+    btn.addEventListener('click', () => {
+      const ta = lastFocused ?? document.querySelector<HTMLTextAreaElement>('.rich-block textarea');
+      if (!ta) return;
+      const action = btn.dataset.blocksFormat;
+      const nextValue = applyBlocksFormat(action, ta);
+      ta.value = nextValue;
+      // Mirror the change into state at the right path.
+      const path = ta.getAttribute('data-rich-block-path') || '';
+      const field = ta.getAttribute('data-rich-block-field') as string | null;
+      if (path && field) {
+        const block = getBlockAtPath(path);
+        if (block) {
+          (block as unknown as Record<string, unknown>)[field] = nextValue;
+        }
+      }
+      refreshPreview();
+    });
+  });
+}
+
+function applyBlocksFormat(action: string | undefined, textarea: HTMLTextAreaElement): string {
+  switch (action) {
+    case 'bold': return wrapSelection(textarea, '**', '**');
+    case 'italic': return wrapSelection(textarea, '*', '*');
+    case 'underline': return wrapSelection(textarea, '<u>', '</u>');
+    case 'strike': return wrapSelection(textarea, '~', '~');
+    case 'code': return wrapSelection(textarea, '`', '`');
+    case 'spoiler': return wrapSelection(textarea, '||', '||');
+    default: return textarea.value;
+  }
 }
 
 // ─── Media library (used by the HTML and Markdown flavors) ──────────────────
