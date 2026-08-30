@@ -149,17 +149,7 @@
   margin-left: 6px;
 }
 
-.tg-preview .tgme_widget_message_views::before {
-  content: "";
-  display: inline-block;
-  width: 16px;
-  height: 10px;
-  margin-right: 4px;
-  vertical-align: -1px;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg height='10' viewBox='0 0 16 10' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 0c2.89 0 5.22 1.67 7 5-1.78 3.33-4.11 5-7 5S2.78 8.33 1 5c1.78-3.33 4.11-5 7-5Zm0 1.48A3.55 3.55 0 0 0 4.4 5 3.55 3.55 0 0 0 8 8.52 3.55 3.55 0 0 0 11.6 5 3.55 3.55 0 0 0 8 1.48Zm0 1.85A1.68 1.68 0 1 1 8 6.7a1.68 1.68 0 0 1 0-3.37Z'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg height='10' viewBox='0 0 16 10' width='16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 0c2.89 0 5.22 1.67 7 5-1.78 3.33-4.11 5-7 5S2.78 8.33 1 5c1.78-3.33 4.11-5 7-5Zm0 1.48A3.55 3.55 0 0 0 4.4 5 3.55 3.55 0 0 0 8 8.52 3.55 3.55 0 0 0 11.6 5 3.55 3.55 0 0 0 8 1.48Zm0 1.85A1.68 1.68 0 1 1 8 6.7a1.68 1.68 0 0 1 0-3.37Z'/%3E%3C/svg%3E") center / contain no-repeat;
-}
+.tg-preview .tgme_widget_message_views { display: none; }
 
 .tg-preview .tg-keyboard,
 .tg-preview .tgme_widget_message_inline_keyboard {

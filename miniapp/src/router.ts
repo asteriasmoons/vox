@@ -1085,7 +1085,9 @@ function applyBlocksFormat(action: string | undefined, textarea: HTMLTextAreaEle
     case 'underline': return wrapSelection(textarea, '<u>', '</u>');
     case 'strike': return wrapSelection(textarea, '~', '~');
     case 'code': return wrapSelection(textarea, '`', '`');
+    case 'quote': return insertAtCursor(textarea, '\n> Quote text\n');
     case 'spoiler': return wrapSelection(textarea, '||', '||');
+    case 'divider': return insertAtCursor(textarea, '\n---\n');
     default: return textarea.value;
   }
 }

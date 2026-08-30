@@ -215,7 +215,9 @@ function richBlocksPane(state: EditorState): string {
         <button type="button" data-blocks-format="underline">U</button>
         <button type="button" data-blocks-format="strike">S</button>
         <button type="button" data-blocks-format="code">{}</button>
+        <button type="button" data-blocks-format="quote">❝</button>
         <button type="button" data-blocks-format="spoiler">Spoiler</button>
+        <button type="button" data-blocks-format="divider">—</button>
       </div>
     </div>
     ${RichBlockBuilder(state.richBlocks)}
