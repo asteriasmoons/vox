@@ -915,7 +915,9 @@ function bindEditor(): void {
   bindRichBlockBuilder();
   bindRichBlocksToolbar();
   bindRichMessageOptions();
-  bindButtonBuilder();
+  // Regular-mode "Inline Buttons" card is replaced by RichButtonBuilder in
+  // Rich mode, so the reply-keyboard bindings only apply in Regular mode.
+  if (state.editor.mode === 'regular') bindButtonBuilder();
   void hydrateEditorChannels(channelSelect);
 
   const previewRoot = document.querySelector('#preview-root');

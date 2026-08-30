@@ -473,15 +473,20 @@
 
 /* ─── Rich preview ────────────────────────────────────────────────────── */
 
-/* Force the preview bubble text to the actual Telegram weight — the app's
-   global font-weight is heavier and cascades in through every child unless
-   we pin it here. !important because a few global rules target this bubble
-   with high specificity we don't want to fight one by one. */
+/* The app's global font is SF Pro Rounded at weight 950 — it renders every
+   descendant as heavy, so pinning font-weight alone isn't enough. Switch
+   the entire preview bubble to a regular system UI stack that actually has
+   a light weight, then set 400 on the body and 700 only on bold parts. */
+.tg-preview,
 .tg-preview .tgme_widget_message_text,
-.tg-preview .tgme_widget_message_text * { font-weight: 400 !important; }
+.tg-preview .tgme_widget_message_text * {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  font-weight: 400 !important;
+}
 .tg-preview .tgme_widget_message_text b,
 .tg-preview .tgme_widget_message_text strong,
-.tg-preview .tgme_widget_message_text .tg-rich-h { font-weight: 700 !important; }
+.tg-preview .tgme_widget_message_text .tg-rich-h,
+.tg-preview .tgme_widget_message_owner_name { font-weight: 600 !important; }
 .tg-preview .tgme_widget_message_text i,
 .tg-preview .tgme_widget_message_text em { font-style: italic !important; }
 .tg-rich { display: grid; gap: 6px; color: #fff; }
